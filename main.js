@@ -74,7 +74,9 @@ class Example extends Phaser.Scene {
   preload() {
     this.load.image("ship", "assets/sprites/ship.png");
     this.load.image("bullet", "assets/sprites/bullet.png");
+    this.load.image("enemybullet", "assets/sprites/bullet4.png");
     this.load.image("alien", "assets/sprites/alien.png");
+    this.load.image("enemy", "assets/sprites/enemyship.png");
     this.load.image("spaceShip", "assets/sprites/spaceShip.png");
     this.load.image("background", "assets/sprites/starBackground.png");
     this.load.audio("laser", "assets/audio/laser1.wav");
@@ -110,7 +112,7 @@ class Example extends Phaser.Scene {
 
     class Alien extends Phaser.GameObjects.Image {
       constructor(scene) {
-        super(scene, 0, 0, "alien");
+        super(scene, 0, 0, "enemy");
         this.scene.physics.world.enable(this);
       }
 
@@ -121,12 +123,14 @@ class Example extends Phaser.Scene {
       }
 
       update(time, delta) {
-        this.y += 1; // Ajusta la velocidad de caída
-        if (this.y > game.config.height) {
-          this.setActive(false);
-          this.setVisible(false);
+        this.y += 0.5; // Adjust the falling speed
+        if (this.y > game.config.height / 3) {
+          this.y = game.config.height / 3; // Set the y position to the middle of the screen
+        } else {
+          this.x += 0.5; // Move the alien horizontally
         }
       }
+      
     }
 
     this.bullets = this.add.group({
