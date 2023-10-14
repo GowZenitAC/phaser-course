@@ -6,11 +6,11 @@ class Preloader extends Phaser.Scene {
     super("preload");
   }
   preload() {
-    this.load.image("play-button", "assets/playbutton.png");
-    this.load.image("mission1", "assets/mission1.png");
-    this.load.image("escenario", "assets/space3.png");
-    this.load.image("titulo", "assets/title.png");
-    this.load.audio("music", "assets/gameMusic.mp3");
+    this.load.image("play-button", "assets/images/playbutton.png");
+    this.load.image("mission1", "assets/images/mission1.png");
+    this.load.image("escenario", "assets/images/space3.png");
+    this.load.image("titulo", "assets/images/title.png");
+    this.load.audio("music", "assets/images/gameMusic.mp3");
   }
   create() {
     this.scene.start("main-menu");
@@ -282,7 +282,7 @@ class Example extends Phaser.Scene {
     }
   }
 
-  bulletHitAlien(bullet, alien) {
+  bulletHitAlien(bullet, alien,) {
     console.log("Colisión detectada");
     bullet.setActive(false);
     bullet.setVisible(false);
