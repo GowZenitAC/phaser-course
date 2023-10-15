@@ -302,7 +302,7 @@ class Example extends Phaser.Scene {
   
 }
 
-var config = {
+const config = {
   type: Phaser.AUTO,
   width,
   height,
