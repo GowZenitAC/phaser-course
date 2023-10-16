@@ -30,7 +30,7 @@ class MainMenu extends Phaser.Scene {
 
   create() {
     const sound = this.sound.add("main-music");
-    sound.play();
+    sound.play( {loop:true} );
     const bg = this.add.image(400, 400, "escenario");
     //  const text = this.add.text(210, 150, "Bienvenido a Project Turns", {
     //     fontSize: "30px",
