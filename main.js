@@ -32,11 +32,7 @@ class MainMenu extends Phaser.Scene {
     const sound = this.sound.add("main-music");
     sound.play( {loop:true} );
     const bg = this.add.image(400, 400, "escenario");
-    //  const text = this.add.text(210, 150, "Bienvenido a Project Turns", {
-    //     fontSize: "30px",
-    //     fontFamily: "Bold",
-    //     color: "#ffffff",
-    //  })
+   
     const title = this.add.image(400, 200, "titulo");
     const playbutton = this.add.image(400, 400, "play-button");
 
@@ -122,7 +118,7 @@ class Example extends Phaser.Scene {
     class EnemyBullet extends Phaser.GameObjects.Image {
       constructor(scene) {
         super(scene, 0, 0, "enemybullet");
-        this.speed = Phaser.Math.GetSpeed(400, 1);
+        this.speed = Phaser.Math.GetSpeed(400, .2);
         this.scene.physics.world.enable(this);
       }
       fire(x, y) {
@@ -132,9 +128,10 @@ class Example extends Phaser.Scene {
       }
       update(time, delta) {
         this.y += this.speed;
-        if (this.y > game.config.height) {
+        if (this.y > this.scene.game.config.height) {
           this.setActive(false);
           this.setVisible(false);
+          this.destroy();
         }
       }
     }
@@ -153,6 +150,7 @@ class Example extends Phaser.Scene {
         this.setPosition(x, y);
         this.setActive(true);
         this.setVisible(true);
+        this.fireBullet();
       }
       startRandomMovement() {
         this.isRandomMoving = true;
@@ -170,7 +168,7 @@ class Example extends Phaser.Scene {
 
       update(time, delta) {
         this.y += 0.5; // Ajusta la velocidad de caída
-        if (this.y > game.config.height / 2) {
+        if (this.y > game.config.height / 3 ) {
           if (!this.isRandomMoving) {
             // Cuando el alien llega a la mitad de la pantalla, comienza a moverse aleatoriamente
             this.startRandomMovement();
@@ -188,6 +186,10 @@ class Example extends Phaser.Scene {
             this.horizontalSpeed = 1; // Restaura la velocidad horizontal predeterminada
           }
           this.x += this.horizontalSpeed; // Mueve el alien horizontalmente
+        }
+        if (this.y > this.scene.game.config.width) {
+          this.destroy();
+          // console.log("alien desaparecido");
         }
       }
       
@@ -224,6 +226,7 @@ class Example extends Phaser.Scene {
     if (this.ship) {
       this.physics.world.enable(this.ship);
       this.ship.body.setAllowGravity(false);
+      this.ship.body.setCollideWorldBounds(true);
     }
 
     this.cursors = this.input.keyboard.createCursorKeys();
@@ -233,7 +236,7 @@ class Example extends Phaser.Scene {
 
     // Temporizador para generar nuevos aliens
     this.time.addEvent({
-      delay: 1000, // Ajusta el intervalo de tiempo
+      delay: 500, // Ajusta el intervalo de tiempo
       callback: this.spawnAlien,
       callbackScope: this,
       loop: true,
