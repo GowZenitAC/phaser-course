@@ -7,10 +7,13 @@ class Preloader extends Phaser.Scene {
   }
   preload() {
     this.load.image("play-button", "assets/images/playbutton.png");
+    this.load.image("comenzar", "assets/images/start.png");
     this.load.image("mission1", "assets/images/mission1.png");
     this.load.image("escenario", "assets/images/space3.png");
     this.load.image("titulo", "assets/images/title.png");
     this.load.audio("music", "assets/images/gameMusic.mp3");
+    this.load.image("background", "assets/images/station2.png");
+    this.load.audio("music", "assets/images/Bipedal Mech.ogg");
   }
   create() {
     this.scene.start("main-menu");
@@ -30,9 +33,9 @@ class MainMenu extends Phaser.Scene {
 
   create() {
     const sound = this.sound.add("main-music");
-    sound.play( {loop:true} );
+    sound.play({ loop: true });
     const bg = this.add.image(400, 400, "escenario");
-   
+
     const title = this.add.image(400, 200, "titulo");
     const playbutton = this.add.image(400, 400, "play-button");
 
@@ -44,7 +47,7 @@ class MainMenu extends Phaser.Scene {
         this.cameras.main.once(
           Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE,
           () => {
-            this.scene.start("game");
+            this.scene.start("init");
             this.sound.stopAll();
           }
         );
@@ -52,6 +55,90 @@ class MainMenu extends Phaser.Scene {
       this
     );
   }
+}
+
+class Init extends Phaser.Scene {
+  constructor() {
+    super("init");
+  }
+  preload() {}
+  create() {
+    
+    const sceneWidth = this.sys.game.config.width;
+    const sceneHeight = this.sys.game.config.height;
+      // const bgWidth = bg.width;
+      // const bgHeight = bg.height;
+    const bg = this.add.image(400, 400, "background");
+    const centerX = sceneWidth / 2;
+    const centerY = sceneHeight / 2;
+    bg.setPosition(centerX, centerY);
+    const text = this.add.text(100, 50, "", {
+      fontSize: "24px",
+      fill: "#ffffff",
+      wordWrap: { width: 600 },
+    });
+
+    const message1 =
+      "En elibre.";
+    const message2 =
+      "David Martza el caos , comienza la destrucción";
+    const delay = 50; // Milisegundos de retraso entre cada carácter
+    let index = 0;
+    const timer = this.time.addEvent({
+      delay: delay,
+      callback: () => {
+        text.text += message1[index];
+        index++;
+        if (index === message1.length) {
+          timer.destroy(); // Detén el temporizador cuando se complete el primer mensaje.
+          // Agrega un evento para esperar la entrada del teclado antes de mostrar el segundo mensaje.
+          this.input.keyboard.once("keydown", () => {
+            text.text = ""; // Borra el primer mensaje
+            this.showSecondMessage(text, message2, delay);
+          });
+        }
+      },
+      repeat: message1.length - 1,
+    });
+  }
+
+  showSecondMessage(text, message, delay) {
+    let index = 0;
+    const timer = this.time.addEvent({
+      delay: delay,
+      callback: () => {
+        text.text += message[index];
+        index++;
+        if (index === message.length) {
+          timer.destroy(); // Detén el temporizador cuando se complete el segundo mensaje.
+          this.addNextSceneButton();
+        }
+      },
+      repeat: message.length - 1,
+    });
+  }
+  addNextSceneButton() {
+    const nextButton = this.add.image(400, 550, 'comenzar');
+  nextButton.setScale(0.2, 0.2);
+
+  // Crea la animación de Tween
+  this.tweens.add({
+    targets: nextButton,
+    alpha: 0.5, // Cambia la opacidad del botón a 0.5 (semi-transparente)
+    duration: 1000, // Duración de la animación en milisegundos
+    yoyo: true, // Hace que la animación se repita de ida y vuelta
+    repeat: -1 // Repite la animación indefinidamente
+  });
+
+  nextButton.setInteractive();
+
+  nextButton.on('pointerdown', () => {
+    this.scene.start('game');
+  });
+  }
+  
+
+  upload() {}
 }
 
 class Example extends Phaser.Scene {
@@ -83,12 +170,15 @@ class Example extends Phaser.Scene {
     this.load.audio("laser", "assets/audio/laser1.wav");
     this.load.audio("explosion-sound", "assets/audio/explosion-sound.wav");
     this.load.audio("blaster", "assets/audio/blaster.mp3");
-    this.load.audio("stellar-confrontation", "assets/audio/Stellar Confrontation-full.ogg");
+    this.load.audio(
+      "stellar-confrontation",
+      "assets/audio/Stellar Confrontation-full.ogg"
+    );
   }
 
   create() {
     const soundbg = this.sound.add("stellar-confrontation");
-    soundbg.play( { loop: true }, { volume: 0.4 });
+    soundbg.play({ loop: true }, { volume: 0.4 });
     const bg = this.add.image(400, 400, "background");
     class Bullet extends Phaser.GameObjects.Image {
       constructor(scene) {
@@ -114,11 +204,10 @@ class Example extends Phaser.Scene {
       }
     }
 
-
     class EnemyBullet extends Phaser.GameObjects.Image {
       constructor(scene) {
         super(scene, 0, 0, "enemybullet");
-        this.speed = Phaser.Math.GetSpeed(400, .2);
+        this.speed = Phaser.Math.GetSpeed(400, 0.2);
         this.scene.physics.world.enable(this);
       }
       fire(x, y) {
@@ -164,11 +253,10 @@ class Example extends Phaser.Scene {
           }
         }
       }
-      
 
       update(time, delta) {
         this.y += 0.5; // Ajusta la velocidad de caída
-        if (this.y > game.config.height / 3 ) {
+        if (this.y > game.config.height / 3) {
           if (!this.isRandomMoving) {
             // Cuando el alien llega a la mitad de la pantalla, comienza a moverse aleatoriamente
             this.startRandomMovement();
@@ -178,8 +266,7 @@ class Example extends Phaser.Scene {
             this.fireBullet(); // Dispara una bala
             this.lastFired = time + this.fireRate; // Actualiza el último momento de disparo
           }
-        } 
-         else {
+        } else {
           if (this.isRandomMoving) {
             // Cuando el alien vuelve a subir, detén el movimiento aleatorio
             this.isRandomMoving = false;
@@ -192,12 +279,11 @@ class Example extends Phaser.Scene {
           // console.log("alien desaparecido");
         }
       }
-      
     }
 
     this.anims.create({
       key: "explosion_animation",
-      frames: this.anims.generateFrameNumbers("explosion",),
+      frames: this.anims.generateFrameNumbers("explosion"),
       frameRate: 20,
       repeat: 0,
     });
@@ -219,8 +305,6 @@ class Example extends Phaser.Scene {
       maxSize: 200, // Ajusta según tus necesidades
       runChildUpdate: true,
     });
-
-    
 
     this.ship = this.add.sprite(400, 500, "ship").setDepth(1);
     if (this.ship) {
@@ -254,7 +338,7 @@ class Example extends Phaser.Scene {
       const bullet = this.bullets.get();
       if (bullet) {
         bullet.fire(this.ship.x, this.ship.y);
-        this.sound.play("blaster", { volume: 0.3 }); ;
+        this.sound.play("blaster", { volume: 0.3 });
         this.lastFired = time + 50;
       }
     }
@@ -273,7 +357,6 @@ class Example extends Phaser.Scene {
       null,
       this
     );
-    
   }
 
   spawnAlien() {
@@ -285,7 +368,7 @@ class Example extends Phaser.Scene {
     }
   }
 
-  bulletHitAlien(bullet, alien,) {
+  bulletHitAlien(bullet, alien) {
     console.log("Colisión detectada");
     bullet.setActive(false);
     bullet.setVisible(false);
@@ -302,7 +385,6 @@ class Example extends Phaser.Scene {
     this.sound.stopByKey("stellar-confrontation");
     console.log("Me dio el alien");
   }
-  
 }
 
 const config = {
@@ -315,7 +397,7 @@ const config = {
       gravity: { y: 200 },
     },
   },
-  scene: [Preloader, MainMenu, Example],
+  scene: [Preloader, MainMenu, Example, Init],
 };
 
 const game = new Phaser.Game(config);
