@@ -12,7 +12,7 @@ class Preloader extends Phaser.Scene {
     this.load.image("escenario", "assets/images/space3.png");
     this.load.image("titulo", "assets/images/title.png");
     this.load.audio("music", "assets/images/gameMusic.mp3");
-    this.load.image("background", "assets/images/station2.png");
+    this.load.image("background2", "assets/images/station2.png");
     this.load.audio("music", "assets/images/Bipedal Mech.ogg");
   }
   create() {
@@ -68,7 +68,7 @@ class Init extends Phaser.Scene {
     const sceneHeight = this.sys.game.config.height;
       // const bgWidth = bg.width;
       // const bgHeight = bg.height;
-    const bg = this.add.image(400, 400, "background");
+    const bg = this.add.image(400, 400, "background2");
     const centerX = sceneWidth / 2;
     const centerY = sceneHeight / 2;
     bg.setPosition(centerX, centerY);
