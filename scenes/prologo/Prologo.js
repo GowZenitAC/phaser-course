@@ -1,0 +1,85 @@
+import Phaser from "phaser";
+
+export default class Init extends Phaser.Scene {
+    constructor() {
+      super("init");
+    }
+    preload() {}
+    create() {
+      
+      const sceneWidth = this.sys.game.config.width;
+      const sceneHeight = this.sys.game.config.height;
+        // const bgWidth = bg.width;
+        // const bgHeight = bg.height;
+      const bg = this.add.image(400, 400, "background2");
+      const centerX = sceneWidth / 2;
+      const centerY = sceneHeight / 2;
+      bg.setPosition(centerX, centerY);
+      const text = this.add.text(100, 50, "", {
+        fontSize: "24px",
+        fill: "#ffffff",
+        wordWrap: { width: 600 },
+      });
+  
+      const message1 =
+        "En elibre.";
+      const message2 =
+        "David Martza el caos , comienza la destrucción";
+      const delay = 50; // Milisegundos de retraso entre cada carácter
+      let index = 0;
+      const timer = this.time.addEvent({
+        delay: delay,
+        callback: () => {
+          text.text += message1[index];
+          index++;
+          if (index === message1.length) {
+            timer.destroy(); // Detén el temporizador cuando se complete el primer mensaje.
+            // Agrega un evento para esperar la entrada del teclado antes de mostrar el segundo mensaje.
+            this.input.keyboard.once("keydown", () => {
+              text.text = ""; // Borra el primer mensaje
+              this.showSecondMessage(text, message2, delay);
+            });
+          }
+        },
+        repeat: message1.length - 1,
+      });
+    }
+  
+    showSecondMessage(text, message, delay) {
+      let index = 0;
+      const timer = this.time.addEvent({
+        delay: delay,
+        callback: () => {
+          text.text += message[index];
+          index++;
+          if (index === message.length) {
+            timer.destroy(); // Detén el temporizador cuando se complete el segundo mensaje.
+            this.addNextSceneButton();
+          }
+        },
+        repeat: message.length - 1,
+      });
+    }
+    addNextSceneButton() {
+      const nextButton = this.add.image(400, 550, 'comenzar');
+    nextButton.setScale(0.2, 0.2);
+  
+    // Crea la animación de Tween
+    this.tweens.add({
+      targets: nextButton,
+      alpha: 0.5, // Cambia la opacidad del botón a 0.5 (semi-transparente)
+      duration: 1000, // Duración de la animación en milisegundos
+      yoyo: true, // Hace que la animación se repita de ida y vuelta
+      repeat: -1 // Repite la animación indefinidamente
+    });
+  
+    nextButton.setInteractive();
+  
+    nextButton.on('pointerdown', () => {
+      this.scene.start('game');
+    });
+    }
+    
+  
+    upload() {}
+  }
