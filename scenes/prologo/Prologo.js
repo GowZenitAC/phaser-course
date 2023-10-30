@@ -4,7 +4,10 @@ export default class Init extends Phaser.Scene {
     constructor() {
       super("init");
     }
-    preload() {}
+    preload() {
+      this.load.image("background2", "assets/images/station2.png");
+      this.load.image("comenzar", "assets/images/start.png");
+    }
     create() {
       
       const sceneWidth = this.sys.game.config.width;

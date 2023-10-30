@@ -3,6 +3,7 @@ import { width, height } from "./modules/constants";
 import Preloader from "./scenes/preload/Preloader";
 import MainMenu from "./scenes/menu/MainMenu";
 import Example from "./scenes/game/Game";
+import Init from "./scenes/prologo/Prologo";
 
 
 
