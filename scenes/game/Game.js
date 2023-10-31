@@ -10,6 +10,7 @@ export default class Example extends Phaser.Scene {
   ship;
   bullets;
   aliens;
+  isBlinking = false;
 
   constructor() {
     super({ key: "game" });
@@ -228,7 +229,12 @@ export default class Example extends Phaser.Scene {
     this.physics.add.collider(
       this.bullets,
       this.aliens,
-      this.bulletHitAlien,
+      (bullet, alien) => {
+        if (bullet.active) {
+          this.bulletHitAlien(bullet, alien);
+          
+        }
+      },
       null,
       this
     );
@@ -259,6 +265,7 @@ export default class Example extends Phaser.Scene {
     explosion.play("explosion_animation");
     this.sound.play("explosion-sound", { volume: 1 });
     alien.destroy();
+    bullet.destroy();
   }
   bulletHitBullet(ship, enemyBullet) {
     enemyBullet.setActive(false);
@@ -274,6 +281,30 @@ export default class Example extends Phaser.Scene {
       this.sound.stopByKey("stellar-confrontation");
 
       game.pause();
+    }else{
+      this.isBlinking = true;
+      this.blinkShip();
     }
+  }
+  blinkShip() {
+    const blinkInterval = 100; // Intervalo de parpadeo en milisegundos
+    const blinkTimes = 10; // Número de veces que parpadea la nave
+
+    let blinkCount = 0;
+    const blinkTimer = this.time.addEvent({
+      delay: blinkInterval,
+      callback: () => {
+        this.ship.setVisible(!this.ship.visible);
+        blinkCount++;
+
+        if (blinkCount >= blinkTimes) {
+          this.ship.setVisible(true);
+          this.isBlinking = false;
+          blinkTimer.destroy();
+        }
+      },
+      callbackScope: this,
+      loop: true,
+    });
   }
 }
