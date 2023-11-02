@@ -225,14 +225,16 @@ export default class Example extends Phaser.Scene {
       }
     }
 
-    this.physics.add.collider(
-      this.bullets,
-      this.aliens,
-      this.bulletHitAlien,
-      null,
-      this
-    );
-    this.physics.add.collider(
+    // this.bullets.children.each((bullet) => {
+      this.physics.overlap(
+        this.bullets,
+        this.aliens,
+        this.bulletHitAlien,
+        null,
+        this
+      );
+    // });
+    this.physics.overlap(
       this.ship,
       this.enemyBullets,
       this.bulletHitBullet,
@@ -259,6 +261,7 @@ export default class Example extends Phaser.Scene {
     explosion.play("explosion_animation");
     this.sound.play("explosion-sound", { volume: 1 });
     alien.destroy();
+    bullet.destroy();
   }
   bulletHitBullet(ship, enemyBullet) {
     enemyBullet.setActive(false);
