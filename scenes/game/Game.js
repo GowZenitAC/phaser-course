@@ -10,7 +10,8 @@ export default class Example extends Phaser.Scene {
   ship;
   bullets;
   aliens;
-
+  shieldActive = false;
+  shieldlife = 1;
   constructor() {
     super({ key: "game" });
   }
@@ -24,13 +25,36 @@ export default class Example extends Phaser.Scene {
       startFrame: 0,
       endFrame: 8,
     });
+    this.load.spritesheet(
+      "explosion-ship",
+      "assets/sprites/explosion-ship.png",
+      {
+        frameWidth: 119,
+        frameHeight: 223,
+        startFrame: 0,
+        endFrame: 7,
+      }
+    );
     this.load.spritesheet("health", "assets/sprites/lifebar2.png", {
       frameWidth: 256,
       frameHeight: 256,
       startFrame: 0,
       endFrame: 6,
     });
+    this.load.spritesheet("shieldbar", "assets/sprites/shield-bar.png", {
+      frameWidth: 192,
+      frameHeight: 192,
+      startFrame: 0,
+      endFrame: 5,
+    });
+    this.load.spritesheet("asteroid", "assets/sprites/asteroid.png", {
+      frameWidth: 432,
+      frameHeight: 357,
+      startFrame: 0,
+      endFrame: 19,
+    });
     this.load.image("enemybullet", "assets/sprites/bullet5.png");
+    this.load.image("shield", "assets/sprites/shield2.png");
     this.load.image("enemy", "assets/sprites/enemyship.png");
     this.load.image("spaceShip", "assets/sprites/spaceShip.png");
     this.load.image("background", "assets/sprites/starBackground.png");
@@ -65,9 +89,13 @@ export default class Example extends Phaser.Scene {
         if (this.y < -50) {
           this.setActive(false);
           this.setVisible(false);
+          this.destroy();
         }
-        this.body.setAllowGravity(false); // Deshabilitar la gravedad en las balas
-        this.body.setImmovable(true); // Hacer que las balas no sean móviles
+        if (this.active) {
+          //comprobar si estan activas las balas para no destruirlas
+          this.body.setAllowGravity(false); // Deshabilitar la gravedad en las balas
+          this.body.setImmovable(true); // Hacer que las balas no sean móviles
+        }
       }
     }
 
@@ -167,9 +195,15 @@ export default class Example extends Phaser.Scene {
       runChildUpdate: true,
     });
 
+    this.shields = this.physics.add.group({
+      key: "shield",
+      maxSize: 3,
+      setXY: { x: 400, y: 0, stepX: 70 },
+    });
+
     this.aliens = this.add.group({
       classType: Alien,
-      maxSize: 200, // Ajusta según tus necesidades
+      maxSize: 350, // Ajusta según tus necesidades
       runChildUpdate: true,
     });
     this.lifevalues = [100, 90, 75, 50, 35, 15, 0];
@@ -188,6 +222,7 @@ export default class Example extends Phaser.Scene {
       })
       .setDepth(1);
     this.lifebar = this.add.sprite(150, 500, "health").setDepth(1);
+    this.shieldbar = this.add.sprite(150, 500, "shieldbar").setDepth(1);
     this.ship = this.add.sprite(400, 500, "ship").setDepth(1);
     if (this.ship) {
       this.physics.world.enable(this.ship);
@@ -202,11 +237,20 @@ export default class Example extends Phaser.Scene {
 
     // Temporizador para generar nuevos aliens
     this.time.addEvent({
-      delay: 500, // Ajusta el intervalo de tiempo
+      delay: 250, // Ajusta el intervalo de tiempo
       callback: this.spawnAlien,
       callbackScope: this,
       loop: true,
     });
+    
+    this.time.addEvent({
+      delay: 50000, // 50000 milisegundos = 50 segundos
+      callback: this.spawnShield,
+      callbackScope: this,
+      loop: true,
+    });
+
+    
   }
 
   update(time, delta) {
@@ -226,18 +270,25 @@ export default class Example extends Phaser.Scene {
     }
 
     // this.bullets.children.each((bullet) => {
-      this.physics.overlap(
-        this.bullets,
-        this.aliens,
-        this.bulletHitAlien,
-        null,
-        this
-      );
+    this.physics.overlap(
+      this.bullets,
+      this.aliens,
+      this.bulletHitAlien,
+      null,
+      this
+    );
     // });
     this.physics.overlap(
       this.ship,
       this.enemyBullets,
       this.bulletHitBullet,
+      null,
+      this
+    );
+    this.physics.overlap(
+      this.ship,
+      this.shields,
+      this.collectShield,
       null,
       this
     );
@@ -250,6 +301,33 @@ export default class Example extends Phaser.Scene {
     if (alien) {
       alien.spawn(x, y);
     }
+  }
+  
+
+  spawnShield() {
+    const x = Phaser.Math.Between(0, this.game.config.width);
+    const y = 0; // Posición en la parte superior de la pantalla
+    let shield = this.shields.getFirstDead();
+    if (!shield) {
+      return; // Si no hay escudos inactivos, no hagas nada
+    }
+    shield.setPosition(x, y);
+    shield.setActive(true);
+    shield.setVisible(true);
+    shield.setBounce(1, 1);
+    shield.setCollideWorldBounds(true);
+    shield.setVelocity(Phaser.Math.Between(-200, 200), 20);
+  }
+
+  collectShield(ship, shield) {
+    // shield.disableBody(true, true);
+    shield.setActive(false);
+    shield.setVisible(false);
+    this.shieldlife = 1;
+    this.shieldbar.setFrame(this.shieldlife);
+    this.shieldActive = true;
+    // Aquí puedes agregar código para aumentar la vida del jugador,
+    // o cualquier otro beneficio que quieras darle al recoger el escudo
   }
 
   bulletHitAlien(bullet, alien) {
@@ -269,14 +347,35 @@ export default class Example extends Phaser.Scene {
     enemyBullet.destroy();
     // game.pause();
     console.log("Me dio el alien");
-    this.life += 1;
-    this.lifeText.setText(this.lifevalues[this.life].toString());
-    this.lifebar.setFrame(this.life);
-    if (this.life >= 6) {
-      this.healthText.setText("You lose!");
-      this.sound.stopByKey("stellar-confrontation");
-
-      game.pause();
+    if (this.shieldActive) {
+      this.shieldlife += 1;
+      this.shieldbar.setFrame(this.shieldlife);
+      if (this.shieldlife >= 5) {
+        this.shieldActive = false;
+      }
+    } else {
+      this.life += 1;
+      this.lifeText.setText(this.lifevalues[this.life].toString());
+      this.lifebar.setFrame(this.life);
+      if (this.life >= 6) {
+        this.healthText.setText("You lose!");
+        this.sound.stopByKey("stellar-confrontation");
+        const explosionShip = this.add.sprite(
+          this.ship.x,
+          this.ship.y,
+          "explosion-ship"
+        );
+        explosionShip.setDepth(1);
+        explosionShip.play("explosion_ship_animation");
+        this.ship.destroy();
+        explosionShip.on(
+          "animationcomplete",
+          () => {
+            game.pause();
+          },
+          this
+        );
+      }
     }
   }
 }
