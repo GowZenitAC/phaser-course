@@ -182,7 +182,12 @@ export default class Example extends Phaser.Scene {
       frameRate: 20,
       repeat: 0,
     });
-
+    this.anims.create({
+      key: "explosion_ship_animation",
+      frames: this.anims.generateFrameNumbers("explosion-ship"),
+      frameRate: 10,
+      repeat: 0,
+    })
     this.bullets = this.add.group({
       classType: Bullet,
       maxSize: 10,
