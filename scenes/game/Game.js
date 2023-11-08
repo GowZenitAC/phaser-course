@@ -363,7 +363,6 @@ export default class Example extends Phaser.Scene {
       this.lifeText.setText(this.lifevalues[this.life].toString());
       this.lifebar.setFrame(this.life);
       if (this.life >= 6) {
-        this.healthText.setText("You lose!");
         this.sound.stopByKey("stellar-confrontation");
         const explosionShip = this.add.sprite(
           this.ship.x,
@@ -376,7 +375,12 @@ export default class Example extends Phaser.Scene {
         explosionShip.on(
           "animationcomplete",
           () => {
-            game.pause();
+            this.time.delayedCall(3000, () => {
+              this.cameras.main.fadeOut(1000);
+              this.time.delayedCall(1000, () => {
+                  this.scene.start("climax");
+              });
+          });
           },
           this
         );
