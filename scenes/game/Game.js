@@ -188,6 +188,13 @@ export default class Example extends Phaser.Scene {
       frameRate: 10,
       repeat: 0,
     });
+    this.anims.create({
+      key: "rotate",
+      frames: this.anims.generateFrameNumbers("asteroid"),
+      frameRate: 10,
+      repeat: -1,
+    });
+
     this.bullets = this.add.group({
       classType: Bullet,
       maxSize: 10,
@@ -205,6 +212,9 @@ export default class Example extends Phaser.Scene {
       maxSize: 3,
       setXY: { x: 400, y: 0, stepX: 70 },
     });
+
+    this.asteroidGroup = this.physics.add.group();
+
 
     this.aliens = this.add.group({
       classType: Alien,
@@ -247,7 +257,7 @@ export default class Example extends Phaser.Scene {
       callbackScope: this,
       loop: true,
     });
-    
+
     this.time.addEvent({
       delay: 50000, // 50000 milisegundos = 50 segundos
       callback: this.spawnShield,
@@ -255,7 +265,12 @@ export default class Example extends Phaser.Scene {
       loop: true,
     });
 
-    
+    this.time.addEvent({
+      delay: 10000, // 10000 milisegundos = 10 segundos
+      callback: this.spawnAsteroid,
+      callbackScope: this,
+      loop: true,
+    });
   }
 
   update(time, delta) {
@@ -273,6 +288,15 @@ export default class Example extends Phaser.Scene {
         this.lastFired = time + 50;
       }
     }
+
+    this.asteroidGroup.getChildren().forEach(asteroid => {
+      if (asteroid.y > this.game.config.height) {
+        // Si el asteroide sale de la pantalla por abajo, lo reciclamos
+        this.asteroidGroup.killAndHide(asteroid);
+        asteroid.setActive(false);
+        asteroid.setVisible(false);
+      }
+    });
 
     // this.bullets.children.each((bullet) => {
     this.physics.overlap(
@@ -297,6 +321,14 @@ export default class Example extends Phaser.Scene {
       null,
       this
     );
+
+    this.physics.overlap(
+      this.ship,
+      this.asteroidGroup,
+      this.asteroidHitShip,
+      null,
+      this
+    )
   }
 
   spawnAlien() {
@@ -307,7 +339,6 @@ export default class Example extends Phaser.Scene {
       alien.spawn(x, y);
     }
   }
-  
 
   spawnShield() {
     const x = Phaser.Math.Between(0, this.game.config.width);
@@ -324,6 +355,20 @@ export default class Example extends Phaser.Scene {
     shield.setVelocity(Phaser.Math.Between(-200, 200), 20);
   }
 
+  spawnAsteroid() {
+    const x = Phaser.Math.Between(0, this.game.config.width);
+    const y = Phaser.Math.Between(-100, -50); // Adjust these values according to your needs
+    const asteroid = this.asteroidGroup.create(x, y, "asteroid");    
+
+    asteroid.setActive(true);
+    asteroid.setVisible(true);
+
+    asteroid.setScale(0.2);
+    asteroid.setCollideWorldBounds(false);
+    asteroid.play("rotate"); // Inicia la animación
+    asteroid.setVelocity(300, 300); // Ajusta la velocidad según tus necesidades
+  }
+
   collectShield(ship, shield) {
     // shield.disableBody(true, true);
     shield.setActive(false);
@@ -334,6 +379,49 @@ export default class Example extends Phaser.Scene {
     // Aquí puedes agregar código para aumentar la vida del jugador,
     // o cualquier otro beneficio que quieras darle al recoger el escudo
   }
+
+  asteroidHitShip(player, asteroid) {
+    // Cuando el jugador colisiona con un asteroide, ejecuta alguna lógica
+    // player.setAlpha(0.5); // Cambia la opacidad del jugador
+    asteroid.setActive(false); // Desactiva el asteroide
+    asteroid.setVisible(false);
+    asteroid.destroy();
+    if (this.shieldActive) {
+      this.shieldActive = false;
+      this.shieldlife = 5
+      this.shieldbar.setFrame(this.shieldlife);
+      
+    }else{
+      this.life = 6;
+      this.lifeText.setText(this.lifevalues[this.life].toString());
+      this.lifebar.setFrame(this.life);
+      if (this.life >= 6) {
+        this.sound.stopByKey("stellar-confrontation");
+        const explosionShip = this.add.sprite(
+          this.ship.x,
+          this.ship.y,
+          "explosion-ship"
+        );
+        explosionShip.setDepth(1);
+        explosionShip.play("explosion_ship_animation");
+        this.ship.destroy();
+        explosionShip.on(
+          "animationcomplete",
+          () => {
+            this.time.delayedCall(3000, () => {
+              this.cameras.main.fadeOut(1000);
+              this.time.delayedCall(1000, () => {
+                this.scene.start("climax");
+              });
+            });
+          },
+          this
+        );
+      }
+    }
+    console.log("Colisión con asteroide detectada");
+  }
+  
 
   bulletHitAlien(bullet, alien) {
     console.log("Colisión detectada");
@@ -378,9 +466,9 @@ export default class Example extends Phaser.Scene {
             this.time.delayedCall(3000, () => {
               this.cameras.main.fadeOut(1000);
               this.time.delayedCall(1000, () => {
-                  this.scene.start("climax");
+                this.scene.start("climax");
               });
-          });
+            });
           },
           this
         );
