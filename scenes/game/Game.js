@@ -376,7 +376,8 @@ export default class Example extends Phaser.Scene {
         explosionShip.on(
           "animationcomplete",
           () => {
-            game.pause();
+            // game.pause();
+            this.scene.start("dos");
           },
           this
         );

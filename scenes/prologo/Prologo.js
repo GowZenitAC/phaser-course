@@ -27,7 +27,7 @@ export default class Init extends Phaser.Scene {
       const message1 =
         "En elibre.";
       const message2 =
-        "David Martza el caos , comienza la destrucción";
+        "Azael Conrado JR el caos , comienza la destrucción";
       const delay = 50; // Milisegundos de retraso entre cada carácter
       let index = 0;
       const timer = this.time.addEvent({
@@ -79,7 +79,7 @@ export default class Init extends Phaser.Scene {
     nextButton.setInteractive();
   
     nextButton.on('pointerdown', () => {
-      this.scene.start('game');
+      this.scene.start('dos');
     });
     }
     
