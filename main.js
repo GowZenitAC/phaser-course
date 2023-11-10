@@ -6,7 +6,7 @@ import Example from "./scenes/game/Game";
 import Init from "./scenes/prologo/Prologo";
 import Climax from "./scenes/continuacion/Climax";
 import Climax2 from "./scenes/continuacion/Climax-Sky";
-
+import Climax3 from "./scenes/continuacion/ClimaxEnd";
 
 
 
@@ -22,7 +22,7 @@ export const config = {
       gravity: { y: 200 },
     },
   },
-  scene: [Preloader, MainMenu, Example, Init, Climax, Climax2, ],
+  scene: [Preloader, MainMenu, Example, Init, Climax, Climax2, Climax3, ],
 };
 
 export const game = new Phaser.Game(config);
