@@ -25,39 +25,15 @@ export default class Nivel2 extends Phaser.Scene {
   }
 
   create() {
-    class disparo extends Phaser.GameObjects.Image {
-      constructor(scene) {
-        super(scene, 0, 0, "bala");
-        this.speed = Phaser.Math.GetSpeed(400, 1);
-        this.scene.physics.world.enable(this);
-      }
-
-      fire(x, y) {
-        this.setPosition(x, y - 50);
-        this.setActive(true);
-        this.setVisible(true);
-      }
-
-      update(time, delta) {
-        this.x -= this.speed * delta;
-        if (this.x < -50) {
-          this.setActive(false);
-          this.setVisible(false);
-          this.destroy();
-        }
-        if (this.active) {
-          //comprobar si estan activas las balas para no destruirlas
-          this.body.setAllowGravity(false); // Deshabilitar la gravedad en las balas
-          this.body.setImmovable(true); // Hacer que las balas no sean móviles
-        }
-      }
-    }
-    // grupo de balas
-    this.bullets = this.add.group({
-      classType: disparo,
-      maxSize: 10,
+    this.bullets = this.physics.add.group({
+      defaultKey: "bala",
+      maxSize: 30,
       runChildUpdate: true,
     });
+
+    this.fireKey = this.input.keyboard.addKey(
+      Phaser.Input.Keyboard.KeyCodes.SPACE
+    );
 
     // create an tiled sprite with the size of our game screen
     this.bg_1 = this.add.tileSprite(
@@ -136,21 +112,14 @@ export default class Nivel2 extends Phaser.Scene {
   }
 
   update(time, delta) {
-    // move the player when the arrow keys are pressed
-    // if (this.cursors.left.isDown && this.player.x > 0) {
-    //     this.player.x -= 3;
-    //     this.player.scaleX = -1; // Cambiar a escala negativa
-    //     if (!this.player.anims.isPlaying || (this.player.anims.isPlaying && this.player.anims.currentAnim.key !== 'player-left')) {
-    //         this.player.play("player-left", true);
-    //     }
-    // }
-    // else if (this.cursors.right.isDown && this.player.x < game.config.width * 3) {
-    //     this.player.x += 3;
-    //     this.player.scaleX = 1; // Cambiar a escala positiva
-    //     if (!this.player.anims.isPlaying || (this.player.anims.isPlaying && this.player.anims.currentAnim.key !== 'player-right')) {
-    //         this.player.play("player-right", true);
-    //     }
-    // }
+    this.bullets.children.each(function (bullet) {
+      if (bullet.active) {
+        if (bullet.x > game.config.width * 3 || bullet.x < 0) {
+          bullet.setActive(false);
+          bullet.setVisible(false);
+        }
+      }
+    }, this);
 
     if (this.cursors.left.isDown && this.player.x > 0) {
       this.player.x -= 3;
@@ -199,17 +168,34 @@ export default class Nivel2 extends Phaser.Scene {
     this.bg_1.tilePositionX = this.myCam.scrollX * 0.3;
     this.bg_2.tilePositionX = this.myCam.scrollX * 0.6;
     this.ground.tilePositionX = this.myCam.scrollX;
-
-    if (
-      this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M).isDown &&
-      time > this.lastFired
-    ) {
-      const bullet = this.bullets.get();
-      if (bullet) {
-        bullet.fire(this.player.x, this.player.y);
-        // this.sound.play("blaster", { volume: 0.3 });
-        this.lastFired = time + 50;
+    if (Phaser.Input.Keyboard.JustDown(this.fireKey)) {
+      this.fireBullet();
+    }
+  }
+  fireBullet() {
+    let bullet = this.bullets.get();
+    if (bullet) {
+      bullet.setActive(true);
+      bullet.setVisible(true);
+      bullet.body.setAllowGravity(false);
+      // bullet.setPosition(this.player.x, this.player.y);
+      // Ajustar la velocidad de la bala según la dirección del jugador
+      if (this.player.direction === "right") {
+        bullet.body.velocity.x = 800;
+        bullet.setPosition(
+          this.player.x + this.player.width / 2,
+          this.player.y
+        );
+      } else {
+        bullet.body.velocity.x = -800;
+        bullet.setPosition(
+          this.player.x - this.player.width / 2,
+          this.player.y
+        );
       }
     }
+  }
+  collectBullet(player, bullet) {
+    bullet.disableBody(true, true);
   }
 }
