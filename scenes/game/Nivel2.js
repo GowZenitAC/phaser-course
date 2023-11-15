@@ -4,6 +4,8 @@ import { game } from "../../main.js";
 export default class Nivel2 extends Phaser.Scene {
   lastFired = 0;
   bullets;
+  fallSpeed = 0;
+  
   constructor() {
     super({ key: "dos" });
   }
@@ -32,7 +34,7 @@ export default class Nivel2 extends Phaser.Scene {
     });
 
     this.fireKey = this.input.keyboard.addKey(
-      Phaser.Input.Keyboard.KeyCodes.SPACE
+      Phaser.Input.Keyboard.KeyCodes.Z
     );
 
     // create an tiled sprite with the size of our game screen
@@ -85,6 +87,7 @@ export default class Nivel2 extends Phaser.Scene {
       }),
       frameRate: 20,
     });
+    
     this.anims.create({
       key: "player-static",
       frames: [{ key: "player", frame: 0 }], // Cambia 0 al número de frame que desees mostrar
@@ -96,6 +99,29 @@ export default class Nivel2 extends Phaser.Scene {
       frames: [{ key: "playerizq", frame: 39 }], // Cambia 0 al número de frame que desees mostrar
       frameRate: 1, // Puedes ajustar la velocidad de la animación si es necesario
       repeat: -1, // -1 para hacer que la animación se repita continuamente
+    });
+    // salto hacia derecha
+    this.anims.create({
+      key: "player-jump",
+      frames: this.anims.generateFrameNumbers("player", { 
+        start: 26,
+        end: 33, }),
+      frameRate: 20,
+    });
+    // mirar hacia arriba
+    this.anims.create({
+      key: "player-up",
+      frames: [{ key: "player", frame: 1 }],
+      frameRate: 20,
+    });
+    // mirar en diagonal derecho
+    this.anims.create({
+      key: "player-diag-der",
+      frames: this.anims.generateFrameNumbers("player", {
+        start: 10,
+        end : 17,
+      }),
+      frameRate: 20,
     });
     // player izquierda
 
@@ -109,6 +135,11 @@ export default class Nivel2 extends Phaser.Scene {
 
     // making the camera follow the player
     this.myCam.startFollow(this.player);
+
+    this.player.isJumping = false; // Agregar una variable para rastrear si el jugador está en el aire
+
+
+    // habilitar boton 
   }
 
   update(time, delta) {
@@ -120,7 +151,7 @@ export default class Nivel2 extends Phaser.Scene {
         }
       }
     }, this);
-
+  
     if (this.cursors.left.isDown && this.player.x > 0) {
       this.player.x -= 3;
       this.player.direction = "left";
@@ -133,8 +164,19 @@ export default class Nivel2 extends Phaser.Scene {
       }
     } else if (
       this.cursors.right.isDown &&
-      this.player.x < game.config.width * 3
+      this.player.x < game.config.width * 3 &&
+      this.cursors.up.isDown
     ) {
+      this.player.x += 3;
+      this.player.direction = "right";
+      if (
+        !this.player.anims.isPlaying ||
+        (this.player.anims.isPlaying &&
+          this.player.anims.currentAnim.key !== "player-diag-der")
+      ) {
+        this.player.play("player-diag-der", true);
+      }
+    } else if (this.cursors.right.isDown && this.player.x < game.config.width * 3) {
       this.player.x += 3;
       this.player.direction = "right";
       if (
@@ -162,8 +204,12 @@ export default class Nivel2 extends Phaser.Scene {
           this.player.play("player-static-izq");
         }
       }
+  
+      if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP).isDown) {
+        this.player.play("player-up", true);
+      }
     }
-
+  
     // scroll the texture of the tilesprites proportionally to the camera scroll
     this.bg_1.tilePositionX = this.myCam.scrollX * 0.3;
     this.bg_2.tilePositionX = this.myCam.scrollX * 0.6;
@@ -172,6 +218,7 @@ export default class Nivel2 extends Phaser.Scene {
       this.fireBullet();
     }
   }
+  
   fireBullet() {
     let bullet = this.bullets.get();
     if (bullet) {
