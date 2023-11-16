@@ -108,10 +108,16 @@ export default class Nivel2 extends Phaser.Scene {
         end: 33, }),
       frameRate: 20,
     });
-    // mirar hacia arriba
+    // mirar hacia arriba derecha
     this.anims.create({
       key: "player-up",
       frames: [{ key: "player", frame: 1 }],
+      frameRate: 20,
+    });
+    // mirar hacia arriba izquierda
+    this.anims.create({
+      key: "player-up-left",
+      frames: { key: "playerizq", frame: 38 },
       frameRate: 20,
     });
     // mirar en diagonal derecho
@@ -120,6 +126,15 @@ export default class Nivel2 extends Phaser.Scene {
       frames: this.anims.generateFrameNumbers("player", {
         start: 10,
         end : 17,
+      }),
+      frameRate: 20,
+    });
+    // mirar en diagonal izquierda
+    this.anims.create({
+      key: "player-diag-contrario",
+      frames: this.anims.generateFrameNumbers("playerizq", {
+        start: 28,
+        end: 22,
       }),
       frameRate: 20,
     });
@@ -152,7 +167,17 @@ export default class Nivel2 extends Phaser.Scene {
       }
     }, this);
   
-    if (this.cursors.left.isDown && this.player.x > 0) {
+    if (this.cursors.left.isDown && this.player.x > 0 && this.cursors.up.isDown) {
+      this.player.x -= 3;
+      this.player.direction = "left";
+      if (
+        !this.player.anims.isPlaying ||
+        (this.player.anims.isPlaying &&
+          this.player.anims.currentAnim.key !== "player-diag-contrario")
+      ) {
+        this.player.play("player-diag-contrario", true);
+      }
+    } else if (this.cursors.left.isDown && this.player.x > 0) {
       this.player.x -= 3;
       this.player.direction = "left";
       if (
@@ -175,7 +200,7 @@ export default class Nivel2 extends Phaser.Scene {
           this.player.anims.currentAnim.key !== "player-diag-der")
       ) {
         this.player.play("player-diag-der", true);
-      }
+      } 
     } else if (this.cursors.right.isDown && this.player.x < game.config.width * 3) {
       this.player.x += 3;
       this.player.direction = "right";
@@ -218,6 +243,7 @@ export default class Nivel2 extends Phaser.Scene {
       this.fireBullet();
     }
   }
+  
   
   fireBullet() {
     let bullet = this.bullets.get();
