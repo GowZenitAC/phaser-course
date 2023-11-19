@@ -4,6 +4,7 @@ import { game } from "../../main.js";
 export default class Nivel2 extends Phaser.Scene {
   lastFired = 0;
   bullets;
+  bulletsup;
   fallSpeed = 0;
   
   constructor() {
@@ -15,6 +16,7 @@ export default class Nivel2 extends Phaser.Scene {
     this.load.image("bg_2", "assets/images/bg-2.png");
     this.load.image("ground", "assets/images/ground.png");
     this.load.image("bala", "assets/images/bala.png");
+    this.load.image("balaup", "assets/images/balaup.png");
     // load spritesheet
     this.load.spritesheet("player", "assets/sprites/player-right.png", {
       frameWidth: 122,
@@ -24,6 +26,10 @@ export default class Nivel2 extends Phaser.Scene {
       frameWidth: 122,
       frameHeight: 122,
     });
+    this.load.spritesheet("cat1", "assets/sprites/cat1.png", {
+      frameWidth: 350,
+      frameHeight: 350,
+    });
   }
 
   create() {
@@ -32,6 +38,12 @@ export default class Nivel2 extends Phaser.Scene {
       maxSize: 30,
       runChildUpdate: true,
     });
+    // grupo de balas arriba eje y
+    this.bulletsup = this.physics.add.group({
+      defaultKey: "balaup",
+      maxSize: 30,
+      runChildUpdate: true,
+    })
 
     this.fireKey = this.input.keyboard.addKey(
       Phaser.Input.Keyboard.KeyCodes.Z
@@ -108,6 +120,15 @@ export default class Nivel2 extends Phaser.Scene {
         end: 33, }),
       frameRate: 20,
     });
+    // gatito 1
+    this.anims.create({
+      key: "cat1",
+      frames: this.anims.generateFrameNumbers("cat1", {
+        start: 0,
+        end: 12,}),
+      frameRate: 12,
+      repeat: -1,
+    });
     // mirar hacia arriba derecha
     this.anims.create({
       key: "player-up",
@@ -153,14 +174,44 @@ export default class Nivel2 extends Phaser.Scene {
 
     this.player.isJumping = false; // Agregar una variable para rastrear si el jugador está en el aire
 
+    // gatito1
+    this.cat1 = this.add.sprite(150, 50, "cat1");
+    this.cat1.setScale(.3);
+    this.cat1.setSize(3, 3);   
+    this.cat1.play("cat1");
 
-    // habilitar boton 
+    // vuelo del cat1
+    this.moveCatRandomly();
+  }
+
+  moveCatRandomly() {
+    // Generar una posición aleatoria en el eje Y
+    const randomY = Phaser.Math.Between(50, game.config.height - 50);
+
+    // Crear una nueva animación aleatoria
+    this.tweens.add({
+      targets: this.cat1,
+      x: game.config.width * 3 - 150, // Mueve el gato hacia la derecha hasta el final del tilesprite
+      y: randomY,
+      duration: Phaser.Math.Between(2000, 20000), // Duración entre 2 y 5 segundos
+      yoyo: true, // Hace que el gato vuelva a la posición inicial
+      repeat: 0, // Repite la animación una vez (puedes ajustar esto según tus necesidades)
+      ease: "Linear", // Tipo de interpolación
+      onComplete: () => {
+        // Cuando la animación se completa, llama a la función nuevamente para el siguiente movimiento aleatorio
+        this.moveCatRandomly();
+      },
+    });
+  
+
   }
 
   update(time, delta) {
+    // gatito
+    
     this.bullets.children.each(function (bullet) {
       if (bullet.active) {
-        if (bullet.x > game.config.width * 3 || bullet.x < 0) {
+        if (bullet.x > game.config.width * 3 || bullet.x < 0 || bullet.y < 0 || bullet.y > game.config.height) {
           bullet.setActive(false);
           bullet.setVisible(false);
         }
@@ -230,9 +281,12 @@ export default class Nivel2 extends Phaser.Scene {
         }
       }
   
-      if (this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.UP).isDown) {
+      if (this.cursors.up.isDown) {
+        this.isAimingUp = true;
         this.player.play("player-up", true);
-      }
+      } else {
+        this.isAimingUp = false;
+      } 
     }
   
     // scroll the texture of the tilesprites proportionally to the camera scroll
@@ -266,6 +320,15 @@ export default class Nivel2 extends Phaser.Scene {
           this.player.y
         );
       }
+       // Cambiar la dirección de la bala basado en si el jugador está apuntando hacia arriba
+     if (this.isAimingUp) {
+       bullet.body.velocity.y = -800;
+       bullet.body.velocity.x = 0; // Mover la bala hacia arriba
+       bullet.setPosition(this.player.x + 20, this.player.y - this.player.height / 3);
+     } else {
+       bullet.body.velocity.y = 0;
+      //  bullet.body.velocity.x = 0; // No mover la bala en la dirección Y
+     }
     }
   }
   collectBullet(player, bullet) {
