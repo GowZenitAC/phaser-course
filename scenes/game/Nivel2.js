@@ -6,12 +6,14 @@ export default class Nivel2 extends Phaser.Scene {
   bullets;
   bulletsup;
   fallSpeed = 0;
+  helicopterAlive = true;
   
   constructor() {
     super({ key: "dos" });
   }
   preload() {
     // load all assets tile sprites
+    this.load.audio("explosion-sound", "assets/audio/explosion-sound.wav");
     this.load.image("bg_1", "assets/images/bg-1.png");
     this.load.image("bg_2", "assets/images/bg-2.png");
     this.load.image("ground", "assets/images/ground.png");
@@ -26,13 +28,27 @@ export default class Nivel2 extends Phaser.Scene {
       frameWidth: 122,
       frameHeight: 122,
     });
-    this.load.spritesheet("cat1", "assets/sprites/cat1.png", {
-      frameWidth: 350,
-      frameHeight: 350,
+    this.load.spritesheet("helicopter1", "assets/sprites/helicopter1.png", {
+      frameWidth: 256,
+      frameHeight: 256,
+    });
+    this.load.spritesheet("explosion", "assets/sprites/explosion.png", {
+      frameWidth: 48,
+      frameHeight: 48,
+    });
+    this.load.spritesheet("soldado_caminando", "assets/sprites/soldado_caminando.png", {
+      frameWidth: 112,
+      frameHeight: 112,
+    });
+    this.load.spritesheet("soldado_disparar", "assets/sprites/soldado_disparar.png", {
+      frameWidth: 112,
+      frameHeight: 112,
     });
   }
 
   create() {
+    
+   
     this.bullets = this.physics.add.group({
       defaultKey: "bala",
       maxSize: 30,
@@ -122,12 +138,21 @@ export default class Nivel2 extends Phaser.Scene {
     });
     // gatito 1
     this.anims.create({
-      key: "cat1",
-      frames: this.anims.generateFrameNumbers("cat1", {
+      key: "helicopter1",
+      frames: this.anims.generateFrameNumbers("helicopter1", {
         start: 0,
-        end: 12,}),
+        end: 9,}),
       frameRate: 12,
       repeat: -1,
+    });
+    // explsion
+    this.anims.create({
+      key: "explosion",
+      frames: this.anims.generateFrameNumbers("explosion"),
+      start: 0,
+      end: 7,
+      frameRate: 20,
+      repeat: 0,
     });
     // mirar hacia arriba derecha
     this.anims.create({
@@ -159,6 +184,24 @@ export default class Nivel2 extends Phaser.Scene {
       }),
       frameRate: 20,
     });
+    // soldado_caminando 1
+    this.anims.create({
+      key: "soldado_caminando",
+      frames: this.anims.generateFrameNumbers("soldado_caminando", {
+        start: 0,
+        end: 7,}),
+      frameRate: 12,
+      repeat: -1,
+    });
+    // soldado_disparar 1
+    this.anims.create({
+      key: "soldado_disparar",
+      frames: this.anims.generateFrameNumbers("soldado_disparar", {
+        start: 0,
+        end: 14,}),
+      frameRate: 12,
+      repeat: -1,
+    });
     // player izquierda
 
     // allow key inputs to control the player
@@ -175,40 +218,25 @@ export default class Nivel2 extends Phaser.Scene {
     this.player.isJumping = false; // Agregar una variable para rastrear si el jugador está en el aire
 
     // gatito1
-    this.cat1 = this.add.sprite(150, 50, "cat1");
-    this.cat1.setScale(.3);
-    this.cat1.setSize(3, 3);   
-    this.cat1.play("cat1");
-
-    // vuelo del cat1
-    this.moveCatRandomly();
-  }
-
-  moveCatRandomly() {
-    // Generar una posición aleatoria en el eje Y
-    const randomY = Phaser.Math.Between(50, game.config.height - 50);
-
-    // Crear una nueva animación aleatoria
-    this.tweens.add({
-      targets: this.cat1,
-      x: game.config.width * 3 - 150, // Mueve el gato hacia la derecha hasta el final del tilesprite
-      y: randomY,
-      duration: Phaser.Math.Between(2000, 20000), // Duración entre 2 y 5 segundos
-      yoyo: true, // Hace que el gato vuelva a la posición inicial
-      repeat: 0, // Repite la animación una vez (puedes ajustar esto según tus necesidades)
-      ease: "Linear", // Tipo de interpolación
-      onComplete: () => {
-        // Cuando la animación se completa, llama a la función nuevamente para el siguiente movimiento aleatorio
-        this.moveCatRandomly();
-      },
+    this.helicopter1 = this.physics.add.sprite(1000, 100, "helicopter1");
+    this.helicopter1.setScale(1, 1);
+    this.helicopter1.setSize(this.helicopter1.width / 2, this.helicopter1.height / 2);
+    this.helicopter1.body.setImmovable(true);
+   
+    this.helicopter1.play("helicopter1");
+    this.helicopter1.body.setAllowGravity(false);
+    this.helicopter1.body.setImmovable(true);
+    this.time.addEvent({
+      delay: 2000,
+      callback: this.fireBulletFromHelicopter,
+      callbackScope: this,
+      loop: true
     });
-  
+
 
   }
 
   update(time, delta) {
-    // gatito
-    
     this.bullets.children.each(function (bullet) {
       if (bullet.active) {
         if (bullet.x > game.config.width * 3 || bullet.x < 0 || bullet.y < 0 || bullet.y > game.config.height) {
@@ -296,6 +324,8 @@ export default class Nivel2 extends Phaser.Scene {
     if (Phaser.Input.Keyboard.JustDown(this.fireKey)) {
       this.fireBullet();
     }
+
+    this.physics.add.collider(this.bullets, this.helicopter1, this.bulletHitHelicopter, null, this);
   }
   
   
@@ -331,7 +361,54 @@ export default class Nivel2 extends Phaser.Scene {
      }
     }
   }
+  // Método para disparar una bala
+
   collectBullet(player, bullet) {
     bullet.disableBody(true, true);
   }
+  bulletHitHelicopter(bullet, helicopter){
+    bullet.setActive(false);
+    bullet.setVisible(false);
+    bullet.destroy();
+    helicopter.destroy();
+    this.helicopterAlive = false;
+    const explosion = this.add.sprite(helicopter.x, helicopter.y, "explosion");
+    explosion.setDepth(1);
+    explosion.play("explosion");
+    explosion.setScale(5); // Aumenta el tamaño de la explosión
+    this.sound.play("explosion-sound", { volume: 1 });
+  }
+  // disparar una bala helicoptero1
+  fireBulletFromHelicopter() {
+    if (!this.helicopterAlive) {
+      return;
+    }
+    let bullet = this.bullets.get();
+    if (bullet) {
+     bullet.setActive(true);
+     bullet.setVisible(true);
+     bullet.body.setAllowGravity(false);
+     bullet.setPosition(
+       this.helicopter1.x + this.helicopter1.width / 5 -140,
+       this.helicopter1.y + 90
+     );
+   
+     let angle = Phaser.Math.Angle.Between(
+       this.helicopter1.x,
+       this.helicopter1.y,
+       this.player.x,
+       this.player.y
+     );
+   
+     let speed = 800; // la velocidad a la que quieres que se mueva la bala
+     let vec = new Phaser.Math.Vector2();
+     vec.setToPolar(angle, speed);
+   
+     bullet.body.velocity.x = vec.x;
+     bullet.body.velocity.y = vec.y;
+    }
+   }
+   
+   
+  
 }
