@@ -8,6 +8,8 @@ export default class Nivel2 extends Phaser.Scene {
   bulletsup;
   fallSpeed = 0;
   helicopterAlive = true;
+  jumpKey;
+  
 
   constructor() {
     super({ key: "dos" });
@@ -166,6 +168,7 @@ export default class Nivel2 extends Phaser.Scene {
         end: 33,
       }),
       frameRate: 20,
+      repeat: 0,
     });
     // gatito 1
     this.anims.create({
@@ -258,6 +261,8 @@ export default class Nivel2 extends Phaser.Scene {
       this.helicopter1.height / 2
     );
     this.helicopter1.body.setImmovable(true);
+    this.jumpKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.X);
+
 
     this.helicopter1.play("helicopter1");
     this.helicopter1.body.setAllowGravity(false);
@@ -277,6 +282,44 @@ export default class Nivel2 extends Phaser.Scene {
   }
 
   update(time, delta) {
+       // Verifica si la tecla X está presionada y el jugador no está en el aire
+       if (Phaser.Input.Keyboard.JustDown(this.jumpKey) && !this.player.isJumping) {
+        // Establece el estado de salto a verdadero
+        this.player.isJumping = true;
+  
+        // Inicia la animación de salto
+
+        this.player.play("player-jump", true);
+  
+        // Establece la velocidad de caída inicial (puedes ajustar este valor)
+        this.fallSpeed = 500;
+      }
+  
+      // Lógica de salto y caída
+      if (this.player.isJumping) {
+        // Aplica la velocidad de caída
+        this.player.y -= this.fallSpeed * (delta / 1000);
+  
+        // Reduce la velocidad de caída con el tiempo
+        this.fallSpeed -= 1000 * (delta / 1000);
+  
+        // Verifica si el jugador ha vuelto al suelo
+        if (this.player.y >= 495) { // Ajusta la altura del suelo según tu configuración
+          this.player.y = 495;
+          this.player.isJumping = false;
+          
+          // Detén la animación de salto
+          this.player.anims.stop("player-jump", true);
+  
+          // Reinicia la animación al estado estático después de aterrizar
+          if (this.player.direction === "right") {
+            this.player.setTexture("player", 0); // Ajusta el frame según tu configuración
+          } else {
+            this.player.setTexture("playerizq", 39); // Ajusta el frame según tu configuración
+          }
+        }
+      }
+
     this.bullets.children.each(function (bullet) {
       if (bullet.active) {
         if (
