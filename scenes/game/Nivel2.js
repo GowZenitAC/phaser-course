@@ -39,10 +39,10 @@ export default class Nivel2 extends Phaser.Scene {
     });
     this.load.spritesheet(
       "soldado_caminando",
-      "assets/sprites/soldado_caminando.png",
+      "assets/sprites/soldier-runed.png",
       {
-        frameWidth: 112,
-        frameHeight: 112,
+        frameWidth: 224,
+        frameHeight: 224,
       }
     );
     this.load.spritesheet(
@@ -236,7 +236,6 @@ export default class Nivel2 extends Phaser.Scene {
       frameRate: 12,
       repeat: -1,
     });
-    // player izquierda
 
     // allow key inputs to control the player
     this.cursors = this.input.keyboard.createCursorKeys();
@@ -304,6 +303,7 @@ export default class Nivel2 extends Phaser.Scene {
           this.player.anims.currentAnim.key !== "player-diag-contrario")
       ) {
         this.player.play("player-diag-contrario", true);
+        this.isAimingDiagIzq = true;
       }
     } else if (this.cursors.left.isDown && this.player.x > 0) {
       this.player.x -= 3;
@@ -328,6 +328,7 @@ export default class Nivel2 extends Phaser.Scene {
           this.player.anims.currentAnim.key !== "player-diag-der")
       ) {
         this.player.play("player-diag-der", true);
+        this.isAimingDiagDer = true;
       }
     } else if (
       this.cursors.right.isDown &&
@@ -344,6 +345,8 @@ export default class Nivel2 extends Phaser.Scene {
       }
     } else {
       if (this.player.direction === "right") {
+        this.isAimingDiagDer = false;
+        this.isAimingDiagIzq = false;
         if (
           !this.player.anims.isPlaying ||
           (this.player.anims.isPlaying &&
@@ -352,6 +355,8 @@ export default class Nivel2 extends Phaser.Scene {
           this.player.play("player-static");
         }
       } else if (this.player.direction === "left") {
+        this.isAimingDiagDer = false;
+        this.isAimingDiagIzq = false;
         if (
           !this.player.anims.isPlaying ||
           (this.player.anims.isPlaying &&
@@ -363,6 +368,8 @@ export default class Nivel2 extends Phaser.Scene {
       if (this.cursors.up.isDown) {
         this.isAimingUp = true;
         this.player.play("player-up", true);
+        this.isAimingDiagDer = false;
+        this.isAimingDiagIzq = false;
       } else {
         this.isAimingUp = false;
       }
@@ -424,6 +431,22 @@ export default class Nivel2 extends Phaser.Scene {
       } else {
         bullet.body.velocity.y = 0;
         //  bullet.body.velocity.x = 0; // No mover la bala en la dirección Y
+      }
+      if (this.isAimingDiagDer) {
+        bullet.body.velocity.y = -800;
+        bullet.body.velocity.x = 800;
+        bullet.setPosition(
+          this.player.x + 50,
+          this.player.y - this.player.height / 5
+        );
+      }
+      if(this.isAimingDiagIzq){
+        bullet.body.velocity.y = -800;
+        bullet.body.velocity.x = -800;
+        bullet.setPosition(
+          this.player.x - 50,
+          this.player.y - this.player.height / 5
+        );
       }
     }
   }
