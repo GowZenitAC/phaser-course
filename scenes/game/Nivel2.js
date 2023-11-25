@@ -1,5 +1,6 @@
 import Phaser from "phaser";
 import { game } from "../../main.js";
+// Define la clase SoldierRun fuera de los métodos de la escena
 
 export default class Nivel2 extends Phaser.Scene {
   lastFired = 0;
@@ -7,7 +8,7 @@ export default class Nivel2 extends Phaser.Scene {
   bulletsup;
   fallSpeed = 0;
   helicopterAlive = true;
-  
+
   constructor() {
     super({ key: "dos" });
   }
@@ -36,19 +37,50 @@ export default class Nivel2 extends Phaser.Scene {
       frameWidth: 48,
       frameHeight: 48,
     });
-    this.load.spritesheet("soldado_caminando", "assets/sprites/soldado_caminando.png", {
-      frameWidth: 112,
-      frameHeight: 112,
-    });
-    this.load.spritesheet("soldado_disparar", "assets/sprites/soldado_disparar.png", {
-      frameWidth: 112,
-      frameHeight: 112,
-    });
+    this.load.spritesheet(
+      "soldado_caminando",
+      "assets/sprites/soldado_caminando.png",
+      {
+        frameWidth: 112,
+        frameHeight: 112,
+      }
+    );
+    this.load.spritesheet(
+      "soldado_disparar",
+      "assets/sprites/soldado_disparar.png",
+      {
+        frameWidth: 112,
+        frameHeight: 112,
+      }
+    );
   }
 
   create() {
-    
-   
+    // hasta aqui
+    // clase de soldado_caminando
+    class SoldierRun extends Phaser.GameObjects.Sprite {
+      constructor(scene) {
+        super(scene, 0,0, "soldado_caminando");
+        this.scene = scene
+        this.speed = 0.5;
+       
+      }
+      spawn(x, y){
+        this.setPosition(x, y);
+        this.setActive(true);
+        this.setVisible(true);
+      }
+      update() {
+        // Mover el soldado
+        this.x -= this.speed;
+      
+      }
+    }
+    this.soldiersRun = this.add.group({
+      classType: SoldierRun,
+      maxSize: 1,
+      runChildUpdate: true
+    });
     this.bullets = this.physics.add.group({
       defaultKey: "bala",
       maxSize: 30,
@@ -59,11 +91,9 @@ export default class Nivel2 extends Phaser.Scene {
       defaultKey: "balaup",
       maxSize: 30,
       runChildUpdate: true,
-    })
+    });
 
-    this.fireKey = this.input.keyboard.addKey(
-      Phaser.Input.Keyboard.KeyCodes.Z
-    );
+    this.fireKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z);
 
     // create an tiled sprite with the size of our game screen
     this.bg_1 = this.add.tileSprite(
@@ -115,7 +145,7 @@ export default class Nivel2 extends Phaser.Scene {
       }),
       frameRate: 20,
     });
-    
+
     this.anims.create({
       key: "player-static",
       frames: [{ key: "player", frame: 0 }], // Cambia 0 al número de frame que desees mostrar
@@ -131,9 +161,10 @@ export default class Nivel2 extends Phaser.Scene {
     // salto hacia derecha
     this.anims.create({
       key: "player-jump",
-      frames: this.anims.generateFrameNumbers("player", { 
+      frames: this.anims.generateFrameNumbers("player", {
         start: 26,
-        end: 33, }),
+        end: 33,
+      }),
       frameRate: 20,
     });
     // gatito 1
@@ -141,7 +172,8 @@ export default class Nivel2 extends Phaser.Scene {
       key: "helicopter1",
       frames: this.anims.generateFrameNumbers("helicopter1", {
         start: 0,
-        end: 9,}),
+        end: 9,
+      }),
       frameRate: 12,
       repeat: -1,
     });
@@ -171,7 +203,7 @@ export default class Nivel2 extends Phaser.Scene {
       key: "player-diag-der",
       frames: this.anims.generateFrameNumbers("player", {
         start: 10,
-        end : 17,
+        end: 17,
       }),
       frameRate: 20,
     });
@@ -189,7 +221,8 @@ export default class Nivel2 extends Phaser.Scene {
       key: "soldado_caminando",
       frames: this.anims.generateFrameNumbers("soldado_caminando", {
         start: 0,
-        end: 7,}),
+        end: 7,
+      }),
       frameRate: 12,
       repeat: -1,
     });
@@ -198,7 +231,8 @@ export default class Nivel2 extends Phaser.Scene {
       key: "soldado_disparar",
       frames: this.anims.generateFrameNumbers("soldado_disparar", {
         start: 0,
-        end: 14,}),
+        end: 14,
+      }),
       frameRate: 12,
       repeat: -1,
     });
@@ -220,9 +254,12 @@ export default class Nivel2 extends Phaser.Scene {
     // gatito1
     this.helicopter1 = this.physics.add.sprite(1000, 100, "helicopter1");
     this.helicopter1.setScale(1, 1);
-    this.helicopter1.setSize(this.helicopter1.width / 2, this.helicopter1.height / 2);
+    this.helicopter1.setSize(
+      this.helicopter1.width / 2,
+      this.helicopter1.height / 2
+    );
     this.helicopter1.body.setImmovable(true);
-   
+
     this.helicopter1.play("helicopter1");
     this.helicopter1.body.setAllowGravity(false);
     this.helicopter1.body.setImmovable(true);
@@ -230,23 +267,35 @@ export default class Nivel2 extends Phaser.Scene {
       delay: 2000,
       callback: this.fireBulletFromHelicopter,
       callbackScope: this,
-      loop: true
+      loop: true,
     });
-
-
+    this.time.addEvent({
+      delay: 2000, // Ajusta el intervalo de tiempo
+      callback: this.spawnSoldier,
+      callbackScope: this,
+      loop: true,
+    });
   }
 
   update(time, delta) {
     this.bullets.children.each(function (bullet) {
       if (bullet.active) {
-        if (bullet.x > game.config.width * 3 || bullet.x < 0 || bullet.y < 0 || bullet.y > game.config.height) {
+        if (
+          bullet.x > game.config.width * 3 ||
+          bullet.x < 0 ||
+          bullet.y < 0 ||
+          bullet.y > game.config.height
+        ) {
           bullet.setActive(false);
           bullet.setVisible(false);
         }
       }
     }, this);
-  
-    if (this.cursors.left.isDown && this.player.x > 0 && this.cursors.up.isDown) {
+    if (
+      this.cursors.left.isDown &&
+      this.player.x > 0 &&
+      this.cursors.up.isDown
+    ) {
       this.player.x -= 3;
       this.player.direction = "left";
       if (
@@ -279,8 +328,11 @@ export default class Nivel2 extends Phaser.Scene {
           this.player.anims.currentAnim.key !== "player-diag-der")
       ) {
         this.player.play("player-diag-der", true);
-      } 
-    } else if (this.cursors.right.isDown && this.player.x < game.config.width * 3) {
+      }
+    } else if (
+      this.cursors.right.isDown &&
+      this.player.x < game.config.width * 3
+    ) {
       this.player.x += 3;
       this.player.direction = "right";
       if (
@@ -308,15 +360,13 @@ export default class Nivel2 extends Phaser.Scene {
           this.player.play("player-static-izq");
         }
       }
-  
       if (this.cursors.up.isDown) {
         this.isAimingUp = true;
         this.player.play("player-up", true);
       } else {
         this.isAimingUp = false;
-      } 
+      }
     }
-  
     // scroll the texture of the tilesprites proportionally to the camera scroll
     this.bg_1.tilePositionX = this.myCam.scrollX * 0.3;
     this.bg_2.tilePositionX = this.myCam.scrollX * 0.6;
@@ -324,11 +374,24 @@ export default class Nivel2 extends Phaser.Scene {
     if (Phaser.Input.Keyboard.JustDown(this.fireKey)) {
       this.fireBullet();
     }
-
-    this.physics.add.collider(this.bullets, this.helicopter1, this.bulletHitHelicopter, null, this);
+    this.physics.add.collider(
+      this.bullets,
+      this.helicopter1,
+      this.bulletHitHelicopter,
+      null,
+      this
+    );
   }
-  
-  
+  spawnSoldier(){
+    const x = 200
+    const y = 495
+    let soldier = this.soldiersRun.get();
+    
+    if(soldier){
+      soldier.spawn(x,y)
+      soldier.anims.play("soldado_caminando", true)
+    }
+  }
   fireBullet() {
     let bullet = this.bullets.get();
     if (bullet) {
@@ -350,23 +413,25 @@ export default class Nivel2 extends Phaser.Scene {
           this.player.y
         );
       }
-       // Cambiar la dirección de la bala basado en si el jugador está apuntando hacia arriba
-     if (this.isAimingUp) {
-       bullet.body.velocity.y = -800;
-       bullet.body.velocity.x = 0; // Mover la bala hacia arriba
-       bullet.setPosition(this.player.x + 20, this.player.y - this.player.height / 3);
-     } else {
-       bullet.body.velocity.y = 0;
-      //  bullet.body.velocity.x = 0; // No mover la bala en la dirección Y
-     }
+      // Cambiar la dirección de la bala basado en si el jugador está apuntando hacia arriba
+      if (this.isAimingUp) {
+        bullet.body.velocity.y = -800;
+        bullet.body.velocity.x = 0; // Mover la bala hacia arriba
+        bullet.setPosition(
+          this.player.x + 20,
+          this.player.y - this.player.height / 3
+        );
+      } else {
+        bullet.body.velocity.y = 0;
+        //  bullet.body.velocity.x = 0; // No mover la bala en la dirección Y
+      }
     }
   }
   // Método para disparar una bala
-
   collectBullet(player, bullet) {
     bullet.disableBody(true, true);
   }
-  bulletHitHelicopter(bullet, helicopter){
+  bulletHitHelicopter(bullet, helicopter) {
     bullet.setActive(false);
     bullet.setVisible(false);
     bullet.destroy();
@@ -385,30 +450,27 @@ export default class Nivel2 extends Phaser.Scene {
     }
     let bullet = this.bullets.get();
     if (bullet) {
-     bullet.setActive(true);
-     bullet.setVisible(true);
-     bullet.body.setAllowGravity(false);
-     bullet.setPosition(
-       this.helicopter1.x + this.helicopter1.width / 5 -140,
-       this.helicopter1.y + 90
-     );
-   
-     let angle = Phaser.Math.Angle.Between(
-       this.helicopter1.x,
-       this.helicopter1.y,
-       this.player.x,
-       this.player.y
-     );
-   
-     let speed = 800; // la velocidad a la que quieres que se mueva la bala
-     let vec = new Phaser.Math.Vector2();
-     vec.setToPolar(angle, speed);
-   
-     bullet.body.velocity.x = vec.x;
-     bullet.body.velocity.y = vec.y;
+      bullet.setActive(true);
+      bullet.setVisible(true);
+      bullet.body.setAllowGravity(false);
+      bullet.setPosition(
+        this.helicopter1.x + this.helicopter1.width / 5 - 140,
+        this.helicopter1.y + 90
+      );
+
+      let angle = Phaser.Math.Angle.Between(
+        this.helicopter1.x,
+        this.helicopter1.y,
+        this.player.x,
+        this.player.y
+      );
+
+      let speed = 800; // la velocidad a la que quieres que se mueva la bala
+      let vec = new Phaser.Math.Vector2();
+      vec.setToPolar(angle, speed);
+
+      bullet.body.velocity.x = vec.x;
+      bullet.body.velocity.y = vec.y;
     }
-   }
-   
-   
-  
+  }
 }
