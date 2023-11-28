@@ -22,7 +22,6 @@ export const config = {
       gravity: { y: 200 },
     },
   },
-  autoCenter: Phaser.Scale.CENTER_BOTH, // Centrar el canvas
   scene: [Preloader, MainMenu, Example, Init, Nivel2 ],
 };
 
