@@ -9,6 +9,7 @@ export default class Nivel2 extends Phaser.Scene {
   fallSpeed = 0;
   helicopterAlive = true;
   jumpKey;
+  killedSoldiers = 0;
   
 
   constructor() {
@@ -41,10 +42,18 @@ export default class Nivel2 extends Phaser.Scene {
     });
     this.load.spritesheet(
       "soldado_caminando",
-      "assets/sprites/soldado_caminando.png",
+      "assets/sprites/soldier-runed.png",
       {
-        frameWidth: 112,
-        frameHeight: 112,
+        frameWidth: 224,
+        frameHeight: 224,
+      }
+    );
+    this.load.spritesheet(
+      "soldado_caminando_reverso",
+      "assets/sprites/soldier-runed-reverse.png",
+      {
+        frameWidth: 224,
+        frameHeight: 224,
       }
     );
     this.load.spritesheet(
@@ -64,8 +73,8 @@ export default class Nivel2 extends Phaser.Scene {
       constructor(scene) {
         super(scene, 0,0, "soldado_caminando");
         this.scene = scene
-        this.speed = 0.5;
-       
+        this.speed = 1;
+        this.scene.physics.world.enable(this);
       }
       spawn(x, y){
         this.setPosition(x, y);
@@ -75,12 +84,41 @@ export default class Nivel2 extends Phaser.Scene {
       update() {
         // Mover el soldado
         this.x -= this.speed;
-      
+        this.body.setAllowGravity(false);
+        this.body.setImmovable(true);
+        this.body.velocity.set(0);
+        this.body.setSize(30, 30);
+      }
+    }
+    class SoldierRunReverse extends Phaser.GameObjects.Sprite {
+      constructor(scene) {
+        super(scene, 0,0, "soldado_caminando_reverso");
+        this.scene = scene
+        this.speed = 1;
+        this.scene.physics.world.enable(this);
+      }
+      spawn(x, y){
+        this.setPosition(x, y);
+        this.setActive(true);
+        this.setVisible(true);
+      }
+      update() {
+        // Mover el soldado
+        this.x += this.speed;
+        this.body.setAllowGravity(false);
+        this.body.setImmovable(true);
+        this.body.velocity.set(0);
+        this.body.setSize(30, 30);
       }
     }
     this.soldiersRun = this.add.group({
       classType: SoldierRun,
-      maxSize: 1,
+      maxSize: 10,
+      runChildUpdate: true
+    });
+    this.soldiersRunRev = this.add.group({
+      classType: SoldierRunReverse,
+      maxSize: 10,
       runChildUpdate: true
     });
     this.bullets = this.physics.add.group({
@@ -89,8 +127,9 @@ export default class Nivel2 extends Phaser.Scene {
       runChildUpdate: true,
     });
     // grupo de balas arriba eje y
-    this.bulletsup = this.physics.add.group({
-      defaultKey: "balaup",
+    
+    this.bulletsHelicopter = this.physics.add.group({
+      defaultKey: "bala",
       maxSize: 30,
       runChildUpdate: true,
     });
@@ -132,7 +171,8 @@ export default class Nivel2 extends Phaser.Scene {
     this.ground.y = game.config.height - 130; // Ajusta el valor 48 según tu preferencia
 
     // add player
-    this.player = this.add.sprite(300, 495, "player");
+    this.player = this.physics.add.sprite(300, 495, "player");
+    this.player.body.setAllowGravity(false);
     // create an animation for the player
     this.anims.create({
       key: "player-right",
@@ -229,6 +269,15 @@ export default class Nivel2 extends Phaser.Scene {
       frameRate: 12,
       repeat: -1,
     });
+    this.anims.create({
+      key: "soldado_caminando_reverso",
+      frames: this.anims.generateFrameNumbers("soldado_caminando_reverso", {
+        start: 7,
+        end: 0,
+      }),
+      frameRate: 12,
+      repeat: -1,
+    });
     // soldado_disparar 1
     this.anims.create({
       key: "soldado_disparar",
@@ -276,8 +325,14 @@ export default class Nivel2 extends Phaser.Scene {
     });
     this.time.addEvent({
       delay: 2000, // Ajusta el intervalo de tiempo
-      callback: this.spawnSoldier,
-      callbackScope: this,
+      callback: this.spawnSoldier ,
+      callbackScope: this, 
+      loop: true,
+    });
+    this.time.addEvent({
+      delay: 2000, // Ajusta el intervalo de tiempo
+      callback: this.spawnSoldierRev,
+      callbackScope: this, 
       loop: true,
     });
   }
@@ -335,6 +390,19 @@ export default class Nivel2 extends Phaser.Scene {
         }
       }
     }, this);
+    this.bulletsHelicopter.children.each(function (bullet) {
+      if (bullet.active) {
+        if (
+          bullet.x > game.config.width * 3 ||
+          bullet.x < 0 ||
+          bullet.y < 0 ||
+          bullet.y > game.config.height
+        ) {
+          bullet.setActive(false);
+          bullet.setVisible(false);
+        }
+      }
+    }, this);
     if (
       this.cursors.left.isDown &&
       this.player.x > 0 &&
@@ -343,18 +411,21 @@ export default class Nivel2 extends Phaser.Scene {
       this.player.x -= 3;
       this.player.direction = "left";
       if (
-        !this.player.anims.isPlaying ||
-        (this.player.anims.isPlaying &&
+        this.player &&
+        this.player.anims &&
+        (!this.player.anims.isPlaying ||
           this.player.anims.currentAnim.key !== "player-jump")
       ) {
         this.player.play("player-diag-contrario", true);
+        this.isAimingDiagIzq = true;
       }
     } else if (this.cursors.left.isDown && this.player.x > 0) {
       this.player.x -= 3;
       this.player.direction = "left";
       if (
-        !this.player.anims.isPlaying ||
-        (this.player.anims.isPlaying &&
+        this.player &&
+        this.player.anims &&
+        (!this.player.anims.isPlaying ||
           this.player.anims.currentAnim.key !== "player-jump")
       ) {
         this.player.play("player-left", true);
@@ -367,11 +438,13 @@ export default class Nivel2 extends Phaser.Scene {
       this.player.x += 3;
       this.player.direction = "right";
       if (
-        !this.player.anims.isPlaying ||
-        (this.player.anims.isPlaying &&
+        this.player &&
+        this.player.anims &&
+        (!this.player.anims.isPlaying ||
           this.player.anims.currentAnim.key !== "player-jump")
       ) {
         this.player.play("player-diag-der", true);
+        this.isAimingDiagDer = true;
       }
     } else if (
       this.cursors.right.isDown &&
@@ -380,28 +453,35 @@ export default class Nivel2 extends Phaser.Scene {
       this.player.x += 3;
       this.player.direction = "right";
       if (
-        !this.player.anims.isPlaying ||
-        (this.player.anims.isPlaying &&
+        this.player &&
+        this.player.anims &&
+        (!this.player.anims.isPlaying ||
           this.player.anims.currentAnim.key !== "player-jump")
       ) {
         this.player.play("player-right", true);
+        this.isAimingDiagDer = false;
+        this.isAimingDiagIzq = false;
       }
     } else {
       if (this.player.direction === "right") {
         if (
-          !this.player.anims.isPlaying ||
-          (this.player.anims.isPlaying &&
+          this.player &&
+          this.player.anims &&
+          (!this.player.anims.isPlaying  ||
             this.player.anims.currentAnim.key !== "player-jump")
         ) {
           this.player.play("player-static");
         }
       } else if (this.player.direction === "left") {
         if (
-          !this.player.anims.isPlaying ||
-          (this.player.anims.isPlaying &&
+          this.player &&
+          this.player.anims &&
+          (!this.player.anims.isPlaying ||
             this.player.anims.currentAnim.key !== "player-jump")
         ) {
           this.player.play("player-static-izq");
+          this.isAimingDiagIzq = false;
+          this.isAimingDiagDer = false;
         }
       }
       if (this.cursors.up.isDown) {
@@ -425,15 +505,40 @@ export default class Nivel2 extends Phaser.Scene {
       null,
       this
     );
+    this.physics.add.overlap(
+      this.bullets,
+      this.soldiersRun,
+      this.bulletHitSoldierRun,
+      null,
+      this
+    )
+    this.physics.add.overlap(
+      this.bullets,
+      this.soldiersRunRev,
+      this.bulletHitSoldierRunRev,
+      null,
+      this
+    );
+   
   }
   spawnSoldier(){
-    const x = 200
-    const y = 495
+    const x = this.cameras.main.worldView.x + this.cameras.main.worldView.width + 10;
+    const y = 485
     let soldier = this.soldiersRun.get();
     
     if(soldier){
       soldier.spawn(x,y)
       soldier.anims.play("soldado_caminando", true)
+    }
+  }
+  spawnSoldierRev(){
+    const x = this.cameras.main.worldView.x - 10;
+    const y = 485
+    let soldier = this.soldiersRunRev.get();
+    
+    if(soldier){
+      soldier.spawn(x,y)
+      soldier.anims.play("soldado_caminando_reverso", true)
     }
   }
   fireBullet() {
@@ -469,6 +574,22 @@ export default class Nivel2 extends Phaser.Scene {
         bullet.body.velocity.y = 0;
         //  bullet.body.velocity.x = 0; // No mover la bala en la dirección Y
       }
+      if (this.isAimingDiagDer) {
+        bullet.body.velocity.y = -800;
+        bullet.body.velocity.x = 800;
+        bullet.setPosition(
+          this.player.x + 50,
+          this.player.y - this.player.height / 5
+        );
+      }
+      if(this.isAimingDiagIzq){
+        bullet.body.velocity.y = -800;
+        bullet.body.velocity.x = -800;
+        bullet.setPosition(
+          this.player.x - 50,
+          this.player.y - this.player.height / 5
+        );
+      }
     }
   }
   // Método para disparar una bala
@@ -487,12 +608,39 @@ export default class Nivel2 extends Phaser.Scene {
     explosion.setScale(5); // Aumenta el tamaño de la explosión
     this.sound.play("explosion-sound", { volume: 1 });
   }
+  bulletHitSoldierRun(bullet, soldier){
+    bullet.setActive(false);
+    bullet.setVisible(false);
+    bullet.destroy();
+    soldier.destroy();
+    const explosion = this.add.sprite(soldier.x, soldier.y, "explosion");
+    explosion.setDepth(1);
+    explosion.play("explosion");
+    explosion.setScale(1); // Aumenta el tamaño de la explosión
+    this.sound.play("explosion-sound", { volume: 1 });
+    this.killedSoldiers = this.killedSoldiers + 1;
+    console.log(`Soldados eliminados: ${this.killedSoldiers}`);
+  }
+  bulletHitSoldierRunRev(bullet, soldier){
+    bullet.setActive(false);
+    bullet.setVisible(false);
+    bullet.destroy();
+    soldier.destroy();
+    const explosion = this.add.sprite(soldier.x, soldier.y, "explosion");
+    explosion.setDepth(1);
+    explosion.play("explosion");
+    explosion.setScale(1); // Aumenta el tamaño de la explosión
+    this.sound.play("explosion-sound", { volume: 1 });
+    this.killedSoldiers = this.killedSoldiers + 1;
+    console.log(`Soldados eliminados: ${this.killedSoldiers}`);
+  }
+  
   // disparar una bala helicoptero1
   fireBulletFromHelicopter() {
     if (!this.helicopterAlive) {
       return;
     }
-    let bullet = this.bullets.get();
+    let bullet = this.bulletsHelicopter.get();
     if (bullet) {
       bullet.setActive(true);
       bullet.setVisible(true);
