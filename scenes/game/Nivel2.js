@@ -519,7 +519,20 @@ export default class Nivel2 extends Phaser.Scene {
       null,
       this
     );
-   
+    this.physics.add.overlap(
+      this.soldiersRun,
+      this.player,
+      this.soldierHitPlayer,
+      null,
+      this
+    )
+    this.physics.add.overlap(
+      this.soldiersRunRev,
+      this.player,
+      this.soldierRunHitPlayer,
+      null,
+      this
+    )
   }
   spawnSoldier(){
     const x = this.cameras.main.worldView.x + this.cameras.main.worldView.width + 10;
@@ -634,7 +647,20 @@ export default class Nivel2 extends Phaser.Scene {
     this.killedSoldiers = this.killedSoldiers + 1;
     console.log(`Soldados eliminados: ${this.killedSoldiers}`);
   }
-  
+  soldierHitPlayer(soldier, player) {
+    
+    // player.destroy();
+    this.isBlinking = true;
+      this.blinkShip();
+    
+  }
+  soldierRunHitPlayer(soldier, player) {
+    
+    // player.destroy();
+    this.isBlinking = true;
+      this.blinkShip();
+    
+  }
   // disparar una bala helicoptero1
   fireBulletFromHelicopter() {
     if (!this.helicopterAlive) {
@@ -664,5 +690,24 @@ export default class Nivel2 extends Phaser.Scene {
       bullet.body.velocity.x = vec.x;
       bullet.body.velocity.y = vec.y;
     }
+  }
+  blinkShip() {
+    const blinkInterval = 100; // Intervalo de parpadeo en milisegundos
+    const blinkTimes = 5; // Número de veces que parpadea la nave
+    let blinkCount = 0;
+    const blinkTimer = this.time.addEvent({
+      delay: blinkInterval,
+      callback: () => {
+        this.player.setVisible(!this.player.visible);
+        blinkCount++;
+        if (blinkCount >= blinkTimes) {
+          this.player.setVisible(true);
+          this.isBlinking = false;
+          blinkTimer.destroy();
+        }
+      },
+      callbackScope: this,
+      loop: true,
+    });
   }
 }
