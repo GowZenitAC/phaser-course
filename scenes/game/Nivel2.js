@@ -18,6 +18,7 @@ export default class Nivel2 extends Phaser.Scene {
   preload() {
     // load all assets tile sprites
     this.load.audio("explosion-sound", "assets/audio/explosion-sound.wav");
+    this.load.audio("retro-metal", "assets/audio/retro_metal.ogg");
     this.load.image("bg_1", "assets/images/bg-1.png");
     this.load.image("bg_2", "assets/images/bg-2.png");
     this.load.image("ground", "assets/images/ground.png");
@@ -67,6 +68,8 @@ export default class Nivel2 extends Phaser.Scene {
   }
 
   create() {
+    const soundbg = this.sound.add("retro-metal");
+    soundbg.play( { loop: true , volume: 1} );
     // hasta aqui
     // clase de soldado_caminando
     class SoldierRun extends Phaser.GameObjects.Sprite {
