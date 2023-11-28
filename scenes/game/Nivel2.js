@@ -48,6 +48,14 @@ export default class Nivel2 extends Phaser.Scene {
       }
     );
     this.load.spritesheet(
+      "soldado_caminando_reverso",
+      "assets/sprites/soldier-runed-reverse.png",
+      {
+        frameWidth: 224,
+        frameHeight: 224,
+      }
+    );
+    this.load.spritesheet(
       "soldado_disparar",
       "assets/sprites/soldado_disparar.png",
       {
@@ -60,6 +68,11 @@ export default class Nivel2 extends Phaser.Scene {
   create() {
     // hasta aqui
     // clase de soldado_caminando
+<<<<<<< Updated upstream
+=======
+    const soundbg = this.sound.add("retro-metal");
+    soundbg.play({ loop: true }, { volume: 1 });
+>>>>>>> Stashed changes
     class SoldierRun extends Phaser.GameObjects.Sprite {
       constructor(scene) {
         super(scene, 0,0, "soldado_caminando");
@@ -75,12 +88,47 @@ export default class Nivel2 extends Phaser.Scene {
       update() {
         // Mover el soldado
         this.x -= this.speed;
+<<<<<<< Updated upstream
       
+=======
+        this.body.setAllowGravity(false);
+        this.body.setImmovable(true);
+        this.body.velocity.set(0);
+        this.body.setSize(30, 30);
+       
+      }
+    }
+    class SoldierRunReverse extends Phaser.GameObjects.Sprite {
+      constructor(scene) {
+        super(scene, 0,0, "soldado_caminando_reverso");
+        this.scene = scene
+        this.speed = 1;
+        this.scene.physics.world.enable(this);
+       
+      }
+      spawn(x, y){
+        this.setPosition(x, y);
+        this.setActive(true);
+        this.setVisible(true);
+      }
+      update() {
+        // Mover el soldado
+        this.x += this.speed;
+        this.body.setAllowGravity(false);
+        this.body.setImmovable(true);
+        this.body.velocity.set(0);
+        this.body.setSize(30, 30);
+>>>>>>> Stashed changes
       }
     }
     this.soldiersRun = this.add.group({
       classType: SoldierRun,
       maxSize: 1,
+      runChildUpdate: true
+    });
+    this.soldiersRunRev = this.add.group({
+      classType: SoldierRunReverse,
+      maxSize: 10,
       runChildUpdate: true
     });
     this.bullets = this.physics.add.group({
@@ -229,6 +277,15 @@ export default class Nivel2 extends Phaser.Scene {
       frameRate: 12,
       repeat: -1,
     });
+    this.anims.create({
+      key: "soldado_caminando_reverso",
+      frames: this.anims.generateFrameNumbers("soldado_caminando_reverso", {
+        start: 7,
+        end: 0,
+      }),
+      frameRate: 12,
+      repeat: -1,
+    });
     // soldado_disparar 1
     this.anims.create({
       key: "soldado_disparar",
@@ -277,6 +334,12 @@ export default class Nivel2 extends Phaser.Scene {
     this.time.addEvent({
       delay: 2000, // Ajusta el intervalo de tiempo
       callback: this.spawnSoldier,
+      callbackScope: this,
+      loop: true,
+    });
+    this.time.addEvent({
+      delay: 2000, // Ajusta el intervalo de tiempo
+      callback: this.spawnSoldierReverse,
       callbackScope: this,
       loop: true,
     });
@@ -425,6 +488,45 @@ export default class Nivel2 extends Phaser.Scene {
       null,
       this
     );
+<<<<<<< Updated upstream
+=======
+    this.physics.add.overlap(
+      this.player,
+      this.bulletsHelicopter,
+     
+      this.bulletHitPlayer,
+      null,
+      this
+    );
+    this.physics.add.overlap(
+      this.bullets,
+      this.soldiersRun,
+      this.bulletHitSoldierRun,
+      null,
+      this
+    );
+    this.physics.add.overlap(
+      this.bullets,
+      this.soldiersRunRev,
+      this.bulletHitSoldierRunRev,
+      null,
+      this
+    );
+    this.physics.add.overlap(
+      this.soldiersRun,
+      this.player,
+      this.soldierHitPlayer,
+      null,
+      this
+    );
+    this.physics.add.overlap(
+      this.soldiersRunRev,
+      this.player,
+      this.soldierReverseHitPlayer,
+      null,
+      this
+    );
+>>>>>>> Stashed changes
   }
   spawnSoldier(){
     const x = 200
@@ -436,6 +538,20 @@ export default class Nivel2 extends Phaser.Scene {
       soldier.anims.play("soldado_caminando", true)
     }
   }
+<<<<<<< Updated upstream
+=======
+  spawnSoldierReverse(){
+    const x = this.cameras.main.worldView.x - 10;
+    const y = 485
+    let soldier = this.soldiersRunRev.get();
+    
+    if(soldier){
+      soldier.spawn(x,y)
+      soldier.anims.play("soldado_caminando_reverso", true)
+    }
+  }
+  
+>>>>>>> Stashed changes
   fireBullet() {
     let bullet = this.bullets.get();
     if (bullet) {
@@ -487,6 +603,54 @@ export default class Nivel2 extends Phaser.Scene {
     explosion.setScale(5); // Aumenta el tamaño de la explosión
     this.sound.play("explosion-sound", { volume: 1 });
   }
+<<<<<<< Updated upstream
+=======
+  bulletHitSoldierRun(bullet, soldier){
+    bullet.setActive(false);
+    bullet.setVisible(false);
+    bullet.destroy();
+    soldier.destroy();
+    const explosion = this.add.sprite(soldier.x, soldier.y, "explosion");
+    explosion.setDepth(1);
+    explosion.play("explosion");
+    explosion.setScale(1); // Aumenta el tamaño de la explosión
+    this.sound.play("explosion-sound", { volume: 1 });
+    this.killedSoldiers = this.killedSoldiers + 1;
+    console.log(`Soldados eliminados: ${this.killedSoldiers}`);
+  }
+  bulletHitSoldierRunRev(bullet, soldier){
+    bullet.setActive(false);
+    bullet.setVisible(false);
+    bullet.destroy();
+    soldier.destroy();
+    const explosion = this.add.sprite(soldier.x, soldier.y, "explosion");
+    explosion.setDepth(1);
+    explosion.play("explosion");
+    explosion.setScale(1); // Aumenta el tamaño de la explosión
+    this.sound.play("explosion-sound", { volume: 1 });
+    this.killedSoldiers = this.killedSoldiers + 1;
+    console.log(`Soldados eliminados: ${this.killedSoldiers}`);
+  }
+  soldierHitPlayer(soldier, player) {
+    
+    // player.destroy();
+    this.isBlinking = true;
+      this.blinkShip();
+
+    
+  }
+  soldierReverseHitPlayer(soldier, player) {
+    this.isBlinking = true;
+      this.blinkShip();
+  }
+  
+  bulletHitPlayer(bullet, player) {
+    // bullet.setActive(false);
+    // bullet.setVisible(false);
+    // bullet.destroy();
+    // player.destroy();
+  }
+>>>>>>> Stashed changes
   // disparar una bala helicoptero1
   fireBulletFromHelicopter() {
     if (!this.helicopterAlive) {
