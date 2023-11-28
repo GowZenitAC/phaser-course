@@ -30,7 +30,7 @@ export default class MainMenu extends Phaser.Scene {
         this.cameras.main.once(
           Phaser.Cameras.Scene2D.Events.FADE_OUT_COMPLETE,
           () => {
-            this.scene.start("dos");
+            this.scene.start("init");
             this.sound.stopAll();
           }
         );

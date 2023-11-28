@@ -167,8 +167,8 @@ export default class Nivel2 extends Phaser.Scene {
         start: 26,
         end: 33,
       }),
-      frameRate: 20,
-      repeat: 0,
+      frameRate: 12,
+      repeat: -1,
     });
     // gatito 1
     this.anims.create({
@@ -299,6 +299,7 @@ export default class Nivel2 extends Phaser.Scene {
       // Lógica de salto y caída
       if (this.player.isJumping) {
         // Aplica la velocidad de caída
+    
         this.player.y -= this.fallSpeed * (delta / 1000);
   
         // Reduce la velocidad de caída con el tiempo
@@ -344,7 +345,7 @@ export default class Nivel2 extends Phaser.Scene {
       if (
         !this.player.anims.isPlaying ||
         (this.player.anims.isPlaying &&
-          this.player.anims.currentAnim.key !== "player-diag-contrario")
+          this.player.anims.currentAnim.key !== "player-jump")
       ) {
         this.player.play("player-diag-contrario", true);
       }
@@ -354,7 +355,7 @@ export default class Nivel2 extends Phaser.Scene {
       if (
         !this.player.anims.isPlaying ||
         (this.player.anims.isPlaying &&
-          this.player.anims.currentAnim.key !== "player-left")
+          this.player.anims.currentAnim.key !== "player-jump")
       ) {
         this.player.play("player-left", true);
       }
@@ -368,7 +369,7 @@ export default class Nivel2 extends Phaser.Scene {
       if (
         !this.player.anims.isPlaying ||
         (this.player.anims.isPlaying &&
-          this.player.anims.currentAnim.key !== "player-diag-der")
+          this.player.anims.currentAnim.key !== "player-jump")
       ) {
         this.player.play("player-diag-der", true);
       }
@@ -381,7 +382,7 @@ export default class Nivel2 extends Phaser.Scene {
       if (
         !this.player.anims.isPlaying ||
         (this.player.anims.isPlaying &&
-          this.player.anims.currentAnim.key !== "player-right")
+          this.player.anims.currentAnim.key !== "player-jump")
       ) {
         this.player.play("player-right", true);
       }
@@ -390,7 +391,7 @@ export default class Nivel2 extends Phaser.Scene {
         if (
           !this.player.anims.isPlaying ||
           (this.player.anims.isPlaying &&
-            this.player.anims.currentAnim.key !== "player-static")
+            this.player.anims.currentAnim.key !== "player-jump")
         ) {
           this.player.play("player-static");
         }
@@ -398,7 +399,7 @@ export default class Nivel2 extends Phaser.Scene {
         if (
           !this.player.anims.isPlaying ||
           (this.player.anims.isPlaying &&
-            this.player.anims.currentAnim.key !== "player-static-izq")
+            this.player.anims.currentAnim.key !== "player-jump")
         ) {
           this.player.play("player-static-izq");
         }
