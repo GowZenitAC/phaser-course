@@ -320,12 +320,40 @@ export default class Nivel2 extends Phaser.Scene {
     this.helicopter1.play("helicopter1");
     this.helicopter1.body.setAllowGravity(false);
     this.helicopter1.body.setImmovable(true);
+       // Añade la animación de vuelo para el helicóptero
+   this.tweens.add({
+    targets: this.helicopter1,
+    y: 200, // Altura a la que quieres que vuele el helicóptero
+    duration: 10000, // Duración del vuelo en milisegundos
+    ease: 'Power2',
+    yoyo: true, // Hace que el helicóptero vuelva a la posición original después del vuelo
+    repeat: -1, // -1 para que la animación se repita infinitamente
+  });
+
+  // Puedes ajustar la posición inicial del helicóptero según tus necesidades
+  this.helicopter1.setPosition(300, 1);
+  this.time.addEvent({
+   delay: 5000, // Delay de 5000 milisegundos (5 segundos)
+   // callback: this.spawnHelicopter,
+   callbackScope: this,
+   loop: true, // Configura el loop para que se repita indefinidamente
+ });
+   // Programa la creación del helicóptero después de 5 segundos
+ this.time.addEvent({
+   delay: 5000, // Retraso en milisegundos (5 segundos)
+   callback: this.createHelicopter,
+   callbackScope: this,
+   loop: false, // No se repite, se ejecuta solo una vez
+ });
+
     this.time.addEvent({
       delay: 2000,
       callback: this.fireBulletFromHelicopter,
       callbackScope: this,
       loop: true,
     });
+    // helicop
+    // fin helico
     this.time.addEvent({
       delay: 2000, // Ajusta el intervalo de tiempo
       callback: this.spawnSoldier ,
