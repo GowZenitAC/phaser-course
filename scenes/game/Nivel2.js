@@ -1,7 +1,5 @@
 import Phaser from "phaser";
 import { game } from "../../main.js";
-// Define la clase SoldierRun fuera de los métodos de la escena
-
 export default class Nivel2 extends Phaser.Scene {
   lastFired = 0;
   bullets;
@@ -10,15 +8,14 @@ export default class Nivel2 extends Phaser.Scene {
   helicopterAlive = true;
   jumpKey;
   killedSoldiers = 0;
-  
-
+  healthHelicopter = 10;
   constructor() {
     super({ key: "dos" });
   }
   preload() {
     // load all assets tile sprites
     this.load.audio("explosion-sound", "assets/audio/explosion-sound.wav");
-    this.load.audio("retro-metal", "assets/audio/retro_metal.ogg");
+    this.load.audio("retro_metal", "assets/audio/retro_metal.ogg");
     this.load.image("bg_1", "assets/images/bg-1.png");
     this.load.image("bg_2", "assets/images/bg-2.png");
     this.load.image("ground", "assets/images/ground.png");
@@ -66,10 +63,9 @@ export default class Nivel2 extends Phaser.Scene {
       }
     );
   }
-
   create() {
-    const soundbg = this.sound.add("retro-metal");
-    soundbg.play( { loop: true , volume: 1} );
+   const soundbg = this.sound.add("retro_metal", { loop: true, volume: 1.0 });
+    soundbg.play();
     // hasta aqui
     // clase de soldado_caminando
     class SoldierRun extends Phaser.GameObjects.Sprite {
@@ -136,9 +132,7 @@ export default class Nivel2 extends Phaser.Scene {
       maxSize: 30,
       runChildUpdate: true,
     });
-
     this.fireKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Z);
-
     // create an tiled sprite with the size of our game screen
     this.bg_1 = this.add.tileSprite(
       0,
@@ -163,7 +157,6 @@ export default class Nivel2 extends Phaser.Scene {
     );
     this.bg_2.setOrigin(0, 0);
     this.bg_2.setScrollFactor(0);
-
     // add the ground layer which is only 48 pixels tall
     this.ground = this.add.tileSprite(0, 0, game.config.width, 200, "ground");
     this.ground.setOrigin(0, 0);
@@ -172,7 +165,6 @@ export default class Nivel2 extends Phaser.Scene {
     // this.ground.y = 12 * 16;
     // Ajustar la posición vertical del suelo para moverlo más abajo
     this.ground.y = game.config.height - 130; // Ajusta el valor 48 según tu preferencia
-
     // add player
     this.player = this.physics.add.sprite(300, 495, "player");
     this.player.body.setAllowGravity(false);
@@ -190,7 +182,6 @@ export default class Nivel2 extends Phaser.Scene {
       }),
       frameRate: 20,
     });
-
     this.anims.create({
       key: "player-static",
       frames: [{ key: "player", frame: 0 }], // Cambia 0 al número de frame que desees mostrar
@@ -213,7 +204,7 @@ export default class Nivel2 extends Phaser.Scene {
       frameRate: 12,
       repeat: -1,
     });
-    // gatito 1
+    // helicopter1
     this.anims.create({
       key: "helicopter1",
       frames: this.anims.generateFrameNumbers("helicopter1", {
@@ -292,59 +283,52 @@ export default class Nivel2 extends Phaser.Scene {
       repeat: -1,
     });
     // player izquierda
-
     // allow key inputs to control the player
     this.cursors = this.input.keyboard.createCursorKeys();
-
     this.player.direction = "right";
     // set workd bounds to allow camera to follow the player
     this.myCam = this.cameras.main;
     this.myCam.setBounds(0, 0, game.config.width * 3, game.config.height);
-
     // making the camera follow the player
     this.myCam.startFollow(this.player);
-
     this.player.isJumping = false; // Agregar una variable para rastrear si el jugador está en el aire
+   // helicopter1
+   this.helicopter1 = this.physics.add.sprite(100, 100, "helicopter1");
+   this.helicopter1.setScale(1, 1);
+   this.helicopter1.setSize(
+     this.helicopter1.width / 2,
+     this.helicopter1.height / 2
+   );
+   this.helicopter1.body.setImmovable(true);
+   this.helicopter1.play("helicopter1");
+   this.helicopter1.body.setAllowGravity(false);
+   this.helicopter1.body.setImmovable(true);
 
-    // gatito1
-    this.helicopter1 = this.physics.add.sprite(1000, 100, "helicopter1");
-    this.helicopter1.setScale(1, 1);
-    this.helicopter1.setSize(
-      this.helicopter1.width / 2,
-      this.helicopter1.height / 2
-    );
-    this.helicopter1.body.setImmovable(true);
-    this.jumpKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.X);
-
-
-    this.helicopter1.play("helicopter1");
-    this.helicopter1.body.setAllowGravity(false);
-    this.helicopter1.body.setImmovable(true);
-       // Añade la animación de vuelo para el helicóptero
+   // Añade la animación de vuelo para el helicóptero
    this.tweens.add({
-    targets: this.helicopter1,
-    y: 200, // Altura a la que quieres que vuele el helicóptero
-    duration: 10000, // Duración del vuelo en milisegundos
-    ease: 'Power2',
-    yoyo: true, // Hace que el helicóptero vuelva a la posición original después del vuelo
-    repeat: -1, // -1 para que la animación se repita infinitamente
-  });
+     targets: this.helicopter1,
+     y: 200, // Altura a la que quieres que vuele el helicóptero
+     duration: 10000, // Duración del vuelo en milisegundos
+     ease: 'Power2',
+     yoyo: true, // Hace que el helicóptero vuelva a la posición original después del vuelo
+     repeat: -1, // -1 para que la animación se repita infinitamente
+   });
 
-  // Puedes ajustar la posición inicial del helicóptero según tus necesidades
-  this.helicopter1.setPosition(300, 1);
+   // Puedes ajustar la posición inicial del helicóptero según tus necesidades
+   this.helicopter1.setPosition(1000, 1);
+   this.time.addEvent({
+    delay: 5000, // Delay de 5000 milisegundos (5 segundos)
+    // callback: this.spawnHelicopter,
+    callbackScope: this,
+    loop: true, // Configura el loop para que se repita indefinidamente
+  });
+    // Programa la creación del helicóptero después de 5 segundos
   this.time.addEvent({
-   delay: 5000, // Delay de 5000 milisegundos (5 segundos)
-   // callback: this.spawnHelicopter,
-   callbackScope: this,
-   loop: true, // Configura el loop para que se repita indefinidamente
- });
-   // Programa la creación del helicóptero después de 5 segundos
- this.time.addEvent({
-   delay: 5000, // Retraso en milisegundos (5 segundos)
-   callback: this.createHelicopter,
-   callbackScope: this,
-   loop: false, // No se repite, se ejecuta solo una vez
- });
+    delay: 5000, // Retraso en milisegundos (5 segundos)
+    callback: this.createHelicopter,
+    callbackScope: this,
+    loop: false, // No se repite, se ejecuta solo una vez
+  });
 
     this.time.addEvent({
       delay: 2000,
@@ -352,8 +336,6 @@ export default class Nivel2 extends Phaser.Scene {
       callbackScope: this,
       loop: true,
     });
-    // helicop
-    // fin helico
     this.time.addEvent({
       delay: 2000, // Ajusta el intervalo de tiempo
       callback: this.spawnSoldier ,
@@ -366,28 +348,24 @@ export default class Nivel2 extends Phaser.Scene {
       callbackScope: this, 
       loop: true,
     });
+    this.jumpKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.X);
   }
-
   update(time, delta) {
+  
        // Verifica si la tecla X está presionada y el jugador no está en el aire
        if (Phaser.Input.Keyboard.JustDown(this.jumpKey) && !this.player.isJumping) {
         // Establece el estado de salto a verdadero
         this.player.isJumping = true;
-  
         // Inicia la animación de salto
-
         this.player.play("player-jump", true);
   
         // Establece la velocidad de caída inicial (puedes ajustar este valor)
         this.fallSpeed = 500;
       }
-  
       // Lógica de salto y caída
       if (this.player.isJumping) {
         // Aplica la velocidad de caída
-    
         this.player.y -= this.fallSpeed * (delta / 1000);
-  
         // Reduce la velocidad de caída con el tiempo
         this.fallSpeed -= 1000 * (delta / 1000);
   
@@ -407,7 +385,6 @@ export default class Nivel2 extends Phaser.Scene {
           }
         }
       }
-
     this.bullets.children.each(function (bullet) {
       if (bullet.active) {
         if (
@@ -641,16 +618,24 @@ export default class Nivel2 extends Phaser.Scene {
     bullet.disableBody(true, true);
   }
   bulletHitHelicopter(bullet, helicopter) {
-    bullet.setActive(false);
+    this.healthHelicopter = this.healthHelicopter - 1
+    console.log(`Vida del helicoptero: ${this.healthHelicopter}`);
+    if (this.healthHelicopter === 0) {
+      this.helicopterAlive = false
+       bullet.setActive(false);
     bullet.setVisible(false);
     bullet.destroy();
-    helicopter.destroy();
-    this.helicopterAlive = false;
     const explosion = this.add.sprite(helicopter.x, helicopter.y, "explosion");
     explosion.setDepth(1);
     explosion.play("explosion");
     explosion.setScale(5); // Aumenta el tamaño de la explosión
     this.sound.play("explosion-sound", { volume: 1 });
+    }
+   
+     helicopter.destroy();
+     helicopter.setActive(false);
+     helicopter.setVisible(false);
+    
   }
   bulletHitSoldierRun(bullet, soldier){
     bullet.setActive(false);
