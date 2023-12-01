@@ -68,6 +68,7 @@ export default class Example extends Phaser.Scene {
   }
 
   create() {
+    
     const soundbg = this.sound.add("stellar-confrontation");
     soundbg.play({ loop: true }, { volume: 0.4 });
     const bg = this.add.image(400, 400, "background");
@@ -330,7 +331,9 @@ export default class Example extends Phaser.Scene {
       this
     )
   }
-
+  stopShipShooting() {
+    this.lastFired = Number.POSITIVE_INFINITY; // Detener futuros disparos
+  }
   spawnAlien() {
     const x = Phaser.Math.Between(0, game.config.width);
     const y = -50; // Posición en la parte superior de la pantalla
@@ -451,6 +454,7 @@ export default class Example extends Phaser.Scene {
       this.lifeText.setText(this.lifevalues[this.life].toString());
       this.lifebar.setFrame(this.life);
       if (this.life >= 6) {
+        this.stopShipShooting();
         this.sound.stopByKey("stellar-confrontation");
         const explosionShip = this.add.sprite(
           this.ship.x,
