@@ -22,6 +22,12 @@ export default class Nivel2 extends Phaser.Scene {
     this.load.image("bala", "assets/images/bala.png");
     this.load.image("balaup", "assets/images/balaup.png");
     // load spritesheet
+    this.load.spritesheet("health", "assets/sprites/lifebar2.png", {
+      frameWidth: 256,
+      frameHeight: 256,
+      startFrame: 0,
+      endFrame: 6,
+    });
     this.load.spritesheet("player", "assets/sprites/player-right.png", {
       frameWidth: 122,
       frameHeight: 122,
@@ -168,6 +174,8 @@ export default class Nivel2 extends Phaser.Scene {
     // add player
     this.player = this.physics.add.sprite(300, 495, "player");
     this.player.body.setAllowGravity(false);
+    this.lifebar = this.add.sprite(150, 50, "health").setDepth(2);
+    this.lifebar.setScrollFactor(0);
     // create an animation for the player
     this.anims.create({
       key: "player-right",
