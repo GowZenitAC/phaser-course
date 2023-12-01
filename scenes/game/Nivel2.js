@@ -8,6 +8,7 @@ export default class Nivel2 extends Phaser.Scene {
   helicopterAlive = true;
   jumpKey;
   killedSoldiers = 0;
+  life = 0;
   healthHelicopter = 10;
   constructor() {
     super({ key: "dos" });
@@ -301,7 +302,7 @@ export default class Nivel2 extends Phaser.Scene {
     this.myCam.startFollow(this.player);
     this.player.isJumping = false; // Agregar una variable para rastrear si el jugador está en el aire
    // helicopter1
-   this.helicopter1 = this.physics.add.sprite(100, 100, "helicopter1");
+   this.helicopter1 = this.physics.add.sprite(100 , 100, "helicopter1");
    this.helicopter1.setScale(1, 1);
    this.helicopter1.setSize(
      this.helicopter1.width / 2,
@@ -311,32 +312,27 @@ export default class Nivel2 extends Phaser.Scene {
    this.helicopter1.play("helicopter1");
    this.helicopter1.body.setAllowGravity(false);
    this.helicopter1.body.setImmovable(true);
+   // Puedes ajustar la posición inicial del helicóptero según tus necesidades
+   this.helicopter1.setPosition(200, 1);
 
    // Añade la animación de vuelo para el helicóptero
    this.tweens.add({
      targets: this.helicopter1,
+     x: 300, // Posición horizontal a la que quieres que vuele el helicóptero
      y: 200, // Altura a la que quieres que vuele el helicóptero
-     duration: 10000, // Duración del vuelo en milisegundos
+     duration: 5000, // Duración del vuelo en milisegundos
      ease: 'Power2',
      yoyo: true, // Hace que el helicóptero vuelva a la posición original después del vuelo
      repeat: -1, // -1 para que la animación se repita infinitamente
    });
-
-   // Puedes ajustar la posición inicial del helicóptero según tus necesidades
-   this.helicopter1.setPosition(1000, 1);
-   this.time.addEvent({
-    delay: 5000, // Delay de 5000 milisegundos (5 segundos)
-    // callback: this.spawnHelicopter,
-    callbackScope: this,
-    loop: true, // Configura el loop para que se repita indefinidamente
-  });
-    // Programa la creación del helicóptero después de 5 segundos
-  this.time.addEvent({
-    delay: 5000, // Retraso en milisegundos (5 segundos)
-    callback: this.createHelicopter,
-    callbackScope: this,
-    loop: false, // No se repite, se ejecuta solo una vez
-  });
+   this.tweens.add({
+     targets: this.helicopter1,
+     x: game.config.width, // Posición horizontal a la que quieres que vuele el helicóptero
+    duration: 5000, // Duración del vuelo en milisegundos
+    ease: 'Linear',
+    yoyo: true, // Hace que el helicóptero vuelva a la posición original：
+    repeat: -1, // -1 para que la animación se repita infinitamente
+   })
 
     this.time.addEvent({
       delay: 2000,
@@ -529,6 +525,13 @@ export default class Nivel2 extends Phaser.Scene {
       this
     )
     this.physics.add.overlap(
+      this.bulletsHelicopter,
+      this.player,
+      this.bulletHelicopterHitPlayer,
+      null,
+      this
+    )
+    this.physics.add.overlap(
       this.bullets,
       this.soldiersRunRev,
       this.bulletHitSoldierRunRev,
@@ -639,7 +642,8 @@ export default class Nivel2 extends Phaser.Scene {
     explosion.setScale(5); // Aumenta el tamaño de la explosión
     this.sound.play("explosion-sound", { volume: 1 });
     }
-   
+    this.isBlinking = true;
+    this.blinkHelicopter();
      helicopter.destroy();
      helicopter.setActive(false);
      helicopter.setVisible(false);
@@ -671,15 +675,33 @@ export default class Nivel2 extends Phaser.Scene {
     this.killedSoldiers = this.killedSoldiers + 1;
     console.log(`Soldados eliminados: ${this.killedSoldiers}`);
   }
+  bulletHelicopterHitPlayer(bullet, player){
+    player.setActive(false);
+    player.setVisible(false);
+    player.destroy();
+    console.log("me dio el helicoptero");
+    this.life += 1;
+    this.lifebar.setFrame(this.life);
+    this.isBlinking = true;
+    this.blinkShip();
+  }
   soldierHitPlayer(soldier, player) {
-    
+    this.life += 1;
+    this.lifebar.setFrame(this.life);
+    soldier.setActive(false);
+    soldier.setVisible(false);
+    soldier.destroy();
     // player.destroy();
     this.isBlinking = true;
       this.blinkShip();
     
   }
   soldierRunHitPlayer(soldier, player) {
-    
+    this.life += 1;
+    this.lifebar.setFrame(this.life);
+    soldier.setActive(false);
+    soldier.setVisible(false);
+    soldier.destroy();
     // player.destroy();
     this.isBlinking = true;
       this.blinkShip();
@@ -717,7 +739,7 @@ export default class Nivel2 extends Phaser.Scene {
   }
   blinkShip() {
     const blinkInterval = 100; // Intervalo de parpadeo en milisegundos
-    const blinkTimes = 5; // Número de veces que parpadea la nave
+    const blinkTimes = 10; // Número de veces que parpadea la nave
     let blinkCount = 0;
     const blinkTimer = this.time.addEvent({
       delay: blinkInterval,
@@ -733,5 +755,24 @@ export default class Nivel2 extends Phaser.Scene {
       callbackScope: this,
       loop: true,
     });
+  }
+  blinkHelicopter() {
+    const blinkInterval = 100; // Intervalo de parpadeo en milisegundos
+    const blinkTimes = 20; // Número de veces que parpadea la nave
+    let blinkCount = 0;
+    const blinkTimer = this.time.addEvent({
+      delay: blinkInterval,
+      callback: () => {
+        this.helicopter1.setVisible(!this.helicopter1.visible);
+        blinkCount++;
+        if (blinkCount >= blinkTimes) {
+          this.helicopter1.setVisible(true);
+          this.isBlinking = false;
+          blinkTimer.destroy();
+        }
+      },
+      callbackScope: this,
+      loop: true,
+    })
   }
 }
