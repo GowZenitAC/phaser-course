@@ -10,6 +10,7 @@ export default class Nivel2 extends Phaser.Scene {
   killedSoldiers = 0;
   life = 0;
   healthHelicopter = 10;
+  healthHelicopter2 = 10;
   constructor() {
     super({ key: "dos" });
   }
@@ -41,6 +42,10 @@ export default class Nivel2 extends Phaser.Scene {
       frameWidth: 256,
       frameHeight: 256,
     });
+    this.load.spritesheet("helicopter2", "assets/sprites/helicopter1.png", {
+      frameWidth: 256,
+      frameHeight: 256,
+    })
     this.load.spritesheet("explosion", "assets/sprites/explosion.png", {
       frameWidth: 48,
       frameHeight: 48,
@@ -223,6 +228,16 @@ export default class Nivel2 extends Phaser.Scene {
       frameRate: 12,
       repeat: -1,
     });
+    // helicopter2
+    this.anims.create({
+      key: "helicopter2",
+      frames: this.anims.generateFrameNumbers("helicopter2", {
+        start: 0,
+        end: 9,
+      }),
+      frameRate: 12,
+      repeat: -1,
+    })
     // explsion
     this.anims.create({
       key: "explosion",
@@ -340,6 +355,38 @@ export default class Nivel2 extends Phaser.Scene {
       callbackScope: this,
       loop: true,
     });
+    // helicoptero2
+   this.helicopter2 = this.physics.add.sprite(100 , 100, "helicopter2");
+   this.helicopter2.setScale(1, 1);
+   this.helicopter2.setSize(
+     this.helicopter2.width / 2,
+     this.helicopter2.height / 2
+   );
+   this.helicopter2.body.setImmovable(true);
+   this.helicopter2.play("helicopter2");
+   this.helicopter2.body.setAllowGravity(false);
+   this.helicopter2.body.setImmovable(true);
+   // Puedes ajustar la posición inicial del helicóptero según tus necesidades
+   this.helicopter2.setPosition(1900, 100);
+
+   // Añade la animación de vuelo para el helicóptero
+
+   this.tweens.add({
+     targets: this.helicopter2,
+     x: game.config.width, // Posición horizontal a la que quieres que vuele el helicóptero
+    duration: 10000, // Duración del vuelo en milisegundos
+    ease: 'Linear',
+    yoyo: true, // Hace que el helicóptero vuelva a la posición original：
+    repeat: -1, // -1 para que la animación se repita infinitamente
+   })
+
+    this.time.addEvent({
+      delay: 2000,
+      callback: this.fireBulletFromHelicopter2,
+      callbackScope: this,
+      loop: true,
+    });
+    // fin helicoptero2
     this.time.addEvent({
       delay: 2000, // Ajusta el intervalo de tiempo
       callback: this.spawnSoldier ,
@@ -517,6 +564,13 @@ export default class Nivel2 extends Phaser.Scene {
       null,
       this
     );
+    this.physics.add.collider(
+      this.bullets,
+      this.helicopter2,
+      this.bulletHitHelicopter2,
+      null,
+      this
+    );
     this.physics.add.overlap(
       this.bullets,
       this.soldiersRun,
@@ -649,6 +703,27 @@ export default class Nivel2 extends Phaser.Scene {
      helicopter.setVisible(false);
     
   }
+  bulletHitHelicopter2(bullet, helicopter2) {
+    this.healthHelicopter2 = this.healthHelicopter2 - 1
+    console.log(`Vida del helicoptero: ${this.healthHelicopter2}`);
+    if (this.healthHelicopter2 === 0) {
+      this.helicopterAlive = false
+       bullet.setActive(false);
+    bullet.setVisible(false);
+    bullet.destroy();
+    const explosion = this.add.sprite(helicopter2.x, helicopter2.y, "explosion");
+    explosion.setDepth(1);
+    explosion.play("explosion");
+    explosion.setScale(5); // Aumenta el tamaño de la explosión
+    this.sound.play("explosion-sound", { volume: 1 });
+    }
+    this.isBlinking = true;
+    this.blinkHelicopter();
+     helicopter2.destroy();
+     helicopter2.setActive(false);
+     helicopter2.setVisible(false);
+    
+  }
   bulletHitSoldierRun(bullet, soldier){
     bullet.setActive(false);
     bullet.setVisible(false);
@@ -725,6 +800,35 @@ export default class Nivel2 extends Phaser.Scene {
       let angle = Phaser.Math.Angle.Between(
         this.helicopter1.x,
         this.helicopter1.y,
+        this.player.x,
+        this.player.y
+      );
+
+      let speed = 800; // la velocidad a la que quieres que se mueva la bala
+      let vec = new Phaser.Math.Vector2();
+      vec.setToPolar(angle, speed);
+
+      bullet.body.velocity.x = vec.x;
+      bullet.body.velocity.y = vec.y;
+    }
+  }
+  fireBulletFromHelicopter2() {
+    if (!this.helicopterAlive) {
+      return;
+    }
+    let bullet = this.bulletsHelicopter.get();
+    if (bullet) {
+      bullet.setActive(true);
+      bullet.setVisible(true);
+      bullet.body.setAllowGravity(false);
+      bullet.setPosition(
+        this.helicopter2.x + this.helicopter2.width / 5 - 140,
+        this.helicopter2.y + 90
+      );
+
+      let angle = Phaser.Math.Angle.Between(
+        this.helicopter2.x,
+        this.helicopter2.y,
         this.player.x,
         this.player.y
       );
