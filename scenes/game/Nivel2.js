@@ -181,6 +181,7 @@ export default class Nivel2 extends Phaser.Scene {
     this.ground.y = game.config.height - 130; // Ajusta el valor 48 según tu preferencia
     // add player
     this.player = this.physics.add.sprite(300, 495, "player");
+    this.player.body.setSize(50, 50);
     this.player.body.setAllowGravity(false);
     this.lifebar = this.add.sprite(150, 50, "health").setDepth(2);
     this.lifebar.setScrollFactor(0);
@@ -807,7 +808,7 @@ export default class Nivel2 extends Phaser.Scene {
   }
   gameOver() {
    // Redirige a la escena 'GameOver' después de un breve retraso (por ejemplo, 1000 ms)
-   this.time.delayedCall(1000, function() {
+   this.time.delayedCall(100, function() {
     this.scene.start('gameOver');
 }, [], this);
 }
@@ -818,6 +819,7 @@ restart() {
 
     // Reiniciar el juego o cargar la escena necesaria
     // Por ejemplo, reiniciar la escena actual
+    this.life = 0;
     this.scene.restart();
 }
   // disparar una bala helicoptero1
