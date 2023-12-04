@@ -6,6 +6,7 @@ import Example from "./scenes/game/Game";
 import Init from "./scenes/prologo/Prologo";
 import Nivel2 from "./scenes/game/Nivel2";
 import Credits from "./scenes/credits/Credits";
+import GameOver from "./scenes/gameOver/gameOver";
 
 
 
@@ -24,7 +25,7 @@ export const config = {
     },
   },
   autoCenter: Phaser.Scale.CENTER_BOTH,
-  scene: [Preloader, MainMenu, Example, Init, Nivel2,Credits ],
+  scene: [Preloader, MainMenu, Example, Init, Nivel2,Credits,GameOver ],
 };
 
 export const game = new Phaser.Game(config);

@@ -11,6 +11,7 @@ export default class Nivel2 extends Phaser.Scene {
   life = 0;
   healthHelicopter = 10;
   healthHelicopter2 = 10;
+  totalLives = 0;
   constructor() {
     super({ key: "dos" });
   }
@@ -76,8 +77,9 @@ export default class Nivel2 extends Phaser.Scene {
     );
   }
   create() {
+    // this.totalLives = 6;
    const soundbg = this.sound.add("retro_metal", { loop: true, volume: 1.0 });
-    soundbg.play();
+    // soundbg.play();
     // hasta aqui
     // clase de soldado_caminando
     class SoldierRun extends Phaser.GameObjects.Sprite {
@@ -759,6 +761,13 @@ export default class Nivel2 extends Phaser.Scene {
     this.lifebar.setFrame(this.life);
     this.isBlinking = true;
     this.blinkShip();
+     // Comprobación de fin de juego
+    
+    const totalLives = 6;
+     if (this.life >= totalLives) {
+      
+      this.gameOver();
+  }
   }
   soldierHitPlayer(soldier, player) {
     this.life += 1;
@@ -769,6 +778,13 @@ export default class Nivel2 extends Phaser.Scene {
     // player.destroy();
     this.isBlinking = true;
       this.blinkShip();
+      // Comprobación de fin de juego
+    
+    const totalLives = 6;
+    if (this.life >= totalLives) {
+     
+     this.gameOver();
+ }
     
   }
   soldierRunHitPlayer(soldier, player) {
@@ -780,8 +796,30 @@ export default class Nivel2 extends Phaser.Scene {
     // player.destroy();
     this.isBlinking = true;
       this.blinkShip();
+      // Comprobación de fin de juego
+    
+    const totalLives = 6;
+    if (this.life >= totalLives) {
+     
+     this.gameOver();
+ }
     
   }
+  gameOver() {
+   // Redirige a la escena 'GameOver' después de un breve retraso (por ejemplo, 1000 ms)
+   this.time.delayedCall(1000, function() {
+    this.scene.start('gameOver');
+}, [], this);
+}
+restart() {
+
+    // Otros restablecimientos de nivel que puedas necesitar
+    // ...
+
+    // Reiniciar el juego o cargar la escena necesaria
+    // Por ejemplo, reiniciar la escena actual
+    this.scene.restart();
+}
   // disparar una bala helicoptero1
   fireBulletFromHelicopter() {
     if (!this.helicopterAlive) {
