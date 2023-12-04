@@ -260,14 +260,14 @@ export default class Example extends Phaser.Scene {
     });
 
     this.time.addEvent({
-      delay: 50000, // 50000 milisegundos = 50 segundos
+      delay: 30000, // 50000 milisegundos = 50 segundos
       callback: this.spawnShield,
       callbackScope: this,
       loop: true,
     });
 
     this.time.addEvent({
-      delay: 10000, // 10000 milisegundos = 10 segundos
+      delay: 400000, // 10000 milisegundos = 10 segundos
       callback: this.spawnAsteroid,
       callbackScope: this,
       loop: true,
