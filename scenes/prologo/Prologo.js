@@ -25,9 +25,9 @@ export default class Init extends Phaser.Scene {
       });
   
       const message1 =
-        "En elibre.";
+        "En el año 2160, Artyom Sirmitev, apodado Derke, lidera una rebelión contra el opresivo Imperio de Britania, que controla la mayor parte de la humanidad. Su lucha se centra en detener la explotación desenfrenada de un recurso no renovable llamado Sakuradita, extraído de la corteza terrestre, que causa daño ambiental.";
       const message2 =
-        "David Martza el caos , comienza la destrucción";
+        "Derke se encontraba camino a reunirse con sus aliados de la rebelión en el planeta Arrakis para obtener armas y recursos que necesitaría para un golpe de estado, sin embargo, no contaba con que su nave había sido rastreada por la flota imperial de britania y sería interceptado… comienza la batalla!!";
       const delay = 50; // Milisegundos de retraso entre cada carácter
       let index = 0;
       const timer = this.time.addEvent({
