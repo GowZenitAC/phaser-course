@@ -16,6 +16,30 @@ export default class Climax3 extends Phaser.Scene {
 
         this.scale.on('resize', this.resize, this);
         this.resize();  
+        const text = this.add.text(100, 50, "", {
+            fontSize: "24px",
+            fill: "#ffffff",
+            wordWrap: { width: 600 },
+          });
+          const message1 =
+        "En el año 2160, Artyom Sirmitev, apodado Derke, lidera una rebelión contra el opresivo Imperio de Britania,";
+        const delay = 50; // Milisegundos de retraso entre cada carácter
+      let index = 0;
+      const timer = this.time.addEvent({
+        delay: delay,
+        callback: () => {
+          text.text += message1[index];
+          index++;
+          if (index === message1.length) {
+            timer.destroy(); // Detén el temporizador cuando se complete el primer mensaje.
+            // Agrega un evento para esperar la entrada del teclado antes de mostrar el segundo mensaje.
+            this.input.keyboard.once("keydown", () => {
+              this.scene.start("dos");
+            });
+          }
+        },
+        repeat: message1.length - 1,
+      });
     }
     resize() {
         const { width, height } = this.scale;
