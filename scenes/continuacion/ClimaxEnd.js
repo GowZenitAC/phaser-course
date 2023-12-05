@@ -21,8 +21,7 @@ export default class Climax3 extends Phaser.Scene {
             fill: "#ffffff",
             wordWrap: { width: 600 },
           });
-          const message1 =
-        "En el año 2160, Artyom Sirmitev, apodado Derke, lidera una rebelión contra el opresivo Imperio de Britania.     presiona cualquier tecla para continuar";
+          const message1 = "“Derke apenas logra enviar un mensaje para pedir ayuda antes de escapar en una capsula, pero su destino fue el planeta Citrino en el que tendría que esperar que el resto de su equipo llegara …mientras tanto seria atacado y acorralado por el imperio. Presiona cualquier tecla para continuar";
         const delay = 50; // Milisegundos de retraso entre cada carácter
       let index = 0;
       const timer = this.time.addEvent({
