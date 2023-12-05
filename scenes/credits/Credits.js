@@ -18,12 +18,12 @@ export default class Credits extends Phaser.Scene {
            // Creamos la lista de creadores y sus títulos
         let creadores = [
             { nombre: 'Development Staff', titulo: 'PROJECT TURNS' },
-            { nombre: 'Armando Conrado', titulo: 'Equipo de Desarrollo' },
+            { nombre: 'Armando Alpuche', titulo: 'Equipo de Desarrollo' },
             { nombre: 'Danny Caamal', titulo: 'Equipo de Desarrollo' },
             { nombre: 'Ariel Nabte', titulo: 'Administrador de proyecto' },
             { nombre: 'Noe Can', titulo: 'Diseñador' },
             { nombre: 'Adan Moo', titulo: 'QA' },
-            { nombre: 'Manuel Can', titulo: 'Tester' },
+            { nombre: 'Manuel Can', titulo: 'CEO' },
             { nombre: ' ', titulo: 'Gracias por jugar!!' },
         ];
 
