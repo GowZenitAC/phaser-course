@@ -80,7 +80,7 @@ export default class Nivel2 extends Phaser.Scene {
   create() {
     // this.totalLives = 6;
    const soundbg = this.sound.add("retro_metal", { loop: true, volume: 1.0 });
-    // soundbg.play();
+     soundbg.play();
     // hasta aqui
     // clase de soldado_caminando
     class SoldierRun extends Phaser.GameObjects.Sprite {
