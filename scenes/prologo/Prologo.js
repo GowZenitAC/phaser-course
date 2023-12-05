@@ -7,9 +7,12 @@ export default class Init extends Phaser.Scene {
     preload() {
       this.load.image("background2", "assets/images/station2.png");
       this.load.image("comenzar", "assets/images/start.png");
+      this.load.audio("historia", "assets/audio/historia.mp3");
     }
     create() {
-      
+      // Reproduce la música
+      const music = this.sound.add("historia", { loop: true });
+      music.play();
       const sceneWidth = this.sys.game.config.width;
       const sceneHeight = this.sys.game.config.height;
         // const bgWidth = bg.width;
@@ -79,6 +82,7 @@ export default class Init extends Phaser.Scene {
     nextButton.setInteractive();
   
     nextButton.on('pointerdown', () => {
+      this.sound.stopAll();
       this.scene.start('game');
     });
     }
