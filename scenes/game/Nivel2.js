@@ -1003,6 +1003,7 @@ restart() {
       this.time.delayedCall(1500, () => {
         this.cameras.main.fadeOut(1000);
         this.time.delayedCall(1000, () => {
+          this.sound.stopAll();
           this.scene.start('rescue');
         })
       })
