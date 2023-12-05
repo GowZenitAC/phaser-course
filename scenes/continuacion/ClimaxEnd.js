@@ -22,7 +22,7 @@ export default class Climax3 extends Phaser.Scene {
             wordWrap: { width: 600 },
           });
           const message1 =
-        "En el año 2160, Artyom Sirmitev, apodado Derke, lidera una rebelión contra el opresivo Imperio de Britania,";
+        "En el año 2160, Artyom Sirmitev, apodado Derke, lidera una rebelión contra el opresivo Imperio de Britania.     presiona cualquier tecla para continuar";
         const delay = 50; // Milisegundos de retraso entre cada carácter
       let index = 0;
       const timer = this.time.addEvent({
