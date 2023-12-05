@@ -29,7 +29,7 @@ export default class Credits extends Phaser.Scene {
 
         let yOffset = 0;
         // Reproduce el audio al inicio de la escena
-    const audio = this.sound.add('finalsong');
+    const audio = this.sound.add('finalsong', {volume:1});
     audio.play();
 
         creadores.forEach((creador, index) => {

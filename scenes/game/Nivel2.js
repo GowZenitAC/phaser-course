@@ -6,6 +6,7 @@ export default class Nivel2 extends Phaser.Scene {
   bulletsup;
   fallSpeed = 0;
   helicopterAlive = true;
+  helicopterAlive2 = true;
   jumpKey;
   killedSoldiers = 0;
   life = 0;
@@ -142,6 +143,11 @@ export default class Nivel2 extends Phaser.Scene {
     // grupo de balas arriba eje y
     
     this.bulletsHelicopter = this.physics.add.group({
+      defaultKey: "bala",
+      maxSize: 30,
+      runChildUpdate: true,
+    });
+    this.bulletsHelicopter2 = this.physics.add.group({
       defaultKey: "bala",
       maxSize: 30,
       runChildUpdate: true,
@@ -589,6 +595,13 @@ export default class Nivel2 extends Phaser.Scene {
       this
     )
     this.physics.add.overlap(
+      this.bulletsHelicopter2,
+      this.player,
+      this.bulletHelicopterHitPlayer,
+      null,
+      this
+    )
+    this.physics.add.overlap(
       this.bullets,
       this.soldiersRunRev,
       this.bulletHitSoldierRunRev,
@@ -688,6 +701,10 @@ export default class Nivel2 extends Phaser.Scene {
   bulletHitHelicopter(bullet, helicopter) {
     this.healthHelicopter = this.healthHelicopter - 1
     console.log(`Vida del helicoptero: ${this.healthHelicopter}`);
+    this.killedSoldiers = this.killedSoldiers + 1
+    if(this.killedSoldiers >= 40 && !this.helicopterAlive && !this.helicopterAlive2){
+      this.startCinematic();
+    }
     if (this.healthHelicopter === 0) {
       this.helicopterAlive = false
        bullet.setActive(false);
@@ -709,8 +726,12 @@ export default class Nivel2 extends Phaser.Scene {
   bulletHitHelicopter2(bullet, helicopter2) {
     this.healthHelicopter2 = this.healthHelicopter2 - 1
     console.log(`Vida del helicoptero: ${this.healthHelicopter2}`);
+    this.killedSoldiers = this.killedSoldiers + 1
+    if(this.killedSoldiers >= 40 && !this.helicopterAlive && !this.helicopterAlive2){
+      this.startCinematic();
+    }
     if (this.healthHelicopter2 === 0) {
-      this.helicopterAlive = false
+      this.helicopterAlive2 = false
        bullet.setActive(false);
     bullet.setVisible(false);
     bullet.destroy();
@@ -739,6 +760,9 @@ export default class Nivel2 extends Phaser.Scene {
     this.sound.play("explosion-sound", { volume: 1 });
     this.killedSoldiers = this.killedSoldiers + 1;
     console.log(`Soldados eliminados: ${this.killedSoldiers}`);
+    if(this.killedSoldiers >= 40 && !this.helicopterAlive && !this.helicopterAlive2){
+      this.startCinematic();
+    }
   }
   bulletHitSoldierRunRev(bullet, soldier){
     bullet.setActive(false);
@@ -752,6 +776,9 @@ export default class Nivel2 extends Phaser.Scene {
     this.sound.play("explosion-sound", { volume: 1 });
     this.killedSoldiers = this.killedSoldiers + 1;
     console.log(`Soldados eliminados: ${this.killedSoldiers}`);
+    if(this.killedSoldiers >= 40 && !this.helicopterAlive && !this.helicopterAlive2){
+      this.startCinematic();
+    }
   }
   bulletHelicopterHitPlayer(bullet, player){
     player.setActive(false);
@@ -767,7 +794,24 @@ export default class Nivel2 extends Phaser.Scene {
     const totalLives = 6;
      if (this.life >= totalLives) {
       
-      this.gameOver();
+      const explosion = this.add.sprite(
+        this.player.x,
+        this.player.y,
+        "explosion"
+      )
+      explosion.setDepth(1); 
+      explosion.play("explosion");
+      explosion.setScale(2);
+      this.sound.play("explosion-sound", { volume: 1 });
+      explosion.on(
+        "animationcomplete",
+        () => {
+          // game.pause();
+          this.gameOver();
+        },
+        this
+      );
+      
   }
   }
   soldierHitPlayer(soldier, player) {
@@ -783,8 +827,23 @@ export default class Nivel2 extends Phaser.Scene {
     
     const totalLives = 6;
     if (this.life >= totalLives) {
-     
-     this.gameOver();
+      const explosion = this.add.sprite(
+        this.player.x,
+        this.player.y,
+        "explosion"
+      )
+      explosion.setDepth(1); 
+      explosion.play("explosion");
+      explosion.setScale(2);
+      this.sound.play("explosion-sound", { volume: 1 });
+      explosion.on(
+        "animationcomplete",
+        () => {
+          // game.pause();
+          this.gameOver();
+        },
+        this
+      );
  }
     
   }
@@ -801,14 +860,29 @@ export default class Nivel2 extends Phaser.Scene {
     
     const totalLives = 6;
     if (this.life >= totalLives) {
-     
-     this.gameOver();
+      const explosion = this.add.sprite(
+        this.player.x,
+        this.player.y,
+        "explosion"
+      )
+      explosion.setDepth(1); 
+      explosion.play("explosion");
+      explosion.setScale(2);
+      this.sound.play("explosion-sound", { volume: 1 });
+      explosion.on(
+        "animationcomplete",
+        () => {
+          // game.pause();
+          this.gameOver();
+        },
+        this
+      );
  }
     
   }
   gameOver() {
    // Redirige a la escena 'GameOver' después de un breve retraso (por ejemplo, 1000 ms)
-   this.time.delayedCall(100, function() {
+   this.time.delayedCall(10, function() {
     this.scene.start('gameOver');
 }, [], this);
 }
@@ -820,6 +894,11 @@ restart() {
     // Reiniciar el juego o cargar la escena necesaria
     // Por ejemplo, reiniciar la escena actual
     this.life = 0;
+    this.killedSoldiers = 0;
+    this.healthHelicopter = 10;
+    this.healthHelicopter2 = 10;
+    this.helicopterAlive = true;
+    this.helicopterAlive2 = true;
     this.scene.restart();
 }
   // disparar una bala helicoptero1
@@ -853,10 +932,10 @@ restart() {
     }
   }
   fireBulletFromHelicopter2() {
-    if (!this.helicopterAlive) {
+    if (!this.helicopterAlive2) {
       return;
     }
-    let bullet = this.bulletsHelicopter.get();
+    let bullet = this.bulletsHelicopter2.get();
     if (bullet) {
       bullet.setActive(true);
       bullet.setVisible(true);
@@ -918,5 +997,15 @@ restart() {
       callbackScope: this,
       loop: true,
     })
+  }
+  startCinematic() {
+      
+      this.time.delayedCall(1500, () => {
+        this.cameras.main.fadeOut(1000);
+        this.time.delayedCall(1000, () => {
+          this.scene.start('rescue');
+        })
+      })
+   
   }
 }
